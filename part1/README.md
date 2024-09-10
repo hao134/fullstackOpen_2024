@@ -408,3 +408,219 @@ JSX 是一種看起來像 HTML 的 JavaScript 語法擴展，讓你能夠在 Rea
 - 確保始終打開控制台，以幫助識別和解決此類錯誤。
 - 使用控制台的錯誤提示來指導你修正代碼，以確保應用正確運行。
 
+# b. Javascript
+## Variables
+
+1. **定義變數的方式**：
+   - **`const`**：定義不可改變的常量，一旦賦值後無法改變值。
+     ```javascript
+     const x = 1;
+     ```
+     - 如果嘗試重新賦值給 `x`，會產生錯誤。
+   
+   - **`let`**：定義可變的變數，可以在後續修改其值。
+     ```javascript
+     let y = 5;
+     y += 10;  // y 的值變為 15
+     y = 'sometext';  // y 的值變為字串
+     ```
+
+2. **動態類型**：
+   - JavaScript 是動態類型語言，變數的數據類型可以在執行期間更改。
+     - 例如，`y` 一開始是一個整數，後來被賦值為一個字串。
+   
+3. **`var` 關鍵字**：
+   - **`var`** 是 JavaScript 早期用來定義變數的方式，直到 ES6 才引入了 `const` 和 `let`。
+   - 與 `let` 和 `const` 不同，`var` 有一些特殊的行為（例如變數提升），因此在現代 JavaScript 開發中不推薦使用。
+   
+4. **推薦使用 `const` 和 `let`**：
+   - 在這門課程中，**不建議使用 `var`**。應盡量使用 `const` 和 `let` 來定義變數，這是現代 JavaScript 的標準做法。
+
+5. **更多資源**：
+   - 了解 `var`, `let`, 和 `const` 之間的區別，推薦觀看 YouTube 或 Medium 上的教學資源，例如：
+     - 「`var`, `let` and `const` - ES6 JavaScript Features」等影片。
+
+### 總結：
+- **`const`**：定義常量，值不可變。
+- **`let`**：定義可變變數，值可變。
+- **避免使用 `var`**，使用 `const` 和 `let` 是現代 JavaScript 的標準。
+
+## Array
+
+1. **定義陣列與基礎操作**：
+   - 陣列可以存儲多個值：
+     ```javascript
+     const t = [1, -1, 3];
+     ```
+   - 使用 `push` 方法可以向陣列添加新元素：
+     ```javascript
+     t.push(5);
+     console.log(t.length); // 4
+     console.log(t[1]);     // -1
+     ```
+
+2. **`forEach` 方法**：
+   - 用來迭代陣列的每個元素，並對每個元素執行一個函數：
+     ```javascript
+     t.forEach(value => {
+       console.log(value);  // 依次打印 1, -1, 3, 5
+     });
+     ```
+
+3. **`const` 和對象的修改**：
+   - 雖然 `const` 定義的變數不能重新賦值，但 `const` 定義的對象（如陣列）的內容是可以修改的。例如，使用 `push` 增加元素並不會違反 `const` 限制，因為引用保持不變。
+
+4. **不可變性與 `concat` 方法**：
+   - 在 React 開發中，推薦使用 **不可變資料結構**。`concat` 方法返回一個新陣列，而不修改原陣列：
+     ```javascript
+     const t2 = t.concat(5);  // 創建新陣列
+     console.log(t);  // [1, -1, 3]
+     console.log(t2); // [1, -1, 3, 5]
+     ```
+
+5. **`map` 方法**：
+   - `map` 用來基於舊陣列創建新陣列，會對每個元素應用一個函數：
+     ```javascript
+     const m1 = t.map(value => value * 2);
+     console.log(m1);  // [2, 4, 6]
+     ```
+   - 也可以用來將陣列轉換成不同類型的資料：
+     ```javascript
+     const m2 = t.map(value => '<li>' + value + '</li>');
+     console.log(m2);  
+     // [ '<li>1</li>', '<li>2</li>', '<li>3</li>' ]
+     ```
+
+6. **解構賦值**：
+   - 可以使用解構賦值輕鬆將陣列中的項目分配給變數：
+     ```javascript
+     const [first, second, ...rest] = [1, 2, 3, 4, 5];
+     console.log(first, second);  // 1, 2
+     console.log(rest);           // [3, 4, 5]
+     ```
+
+### 總結：
+- 使用 `forEach` 來遍歷陣列元素。
+- 使用 `push` 來修改陣列，但在 React 中推薦使用不可變操作如 `concat`。
+- 使用 `map` 創建新陣列或轉換數據。
+- 使用解構賦值來將陣列元素分配給變數。 
+
+## Objects
+
+
+1. **物件的定義方式**：
+   - 最常見的方式是使用**物件字面量**，在大括號內列出屬性和對應的值：
+     ```javascript
+     const object1 = {
+       name: 'Arto Hellas',
+       age: 35,
+       education: 'PhD',
+     }
+
+     const object2 = {
+       name: 'Full Stack web application development',
+       level: 'intermediate studies',
+       size: 5,
+     }
+
+     const object3 = {
+       name: {
+         first: 'Dan',
+         last: 'Abramov',
+       },
+       grades: [2, 3, 5, 3],
+       department: 'Stanford University',
+     }
+     ```
+
+2. **屬性值可以是任何類型**：
+   - 物件的屬性值可以是數字、字串、陣列，甚至是其他物件。
+
+3. **訪問屬性**：
+   - 使用點標記法 (`.`) 或括號標記法 (`[]`) 訪問物件屬性：
+     ```javascript
+     console.log(object1.name)         // Arto Hellas
+     const fieldName = 'age'
+     console.log(object1[fieldName])   // 35
+     ```
+
+4. **動態添加屬性**：
+   - 可以隨時向物件添加新的屬性：
+     ```javascript
+     object1.address = 'Helsinki'
+     object1['secret number'] = 12341
+     ```
+   - 注意：若屬性名稱包含空格，必須使用括號標記法。
+
+5. **物件的方法**：
+   - 物件可以擁有方法（即函數作為屬性）。然而，在這門課程中不會深入討論物件方法，因為課程範圍不涉及定義帶有方法的物件。
+
+6. **建構函數與類別**：
+   - JavaScript 也可以使用**建構函數**來定義物件，這與許多其他編程語言（如 Java）類似。雖然 JavaScript 傳統上沒有真正的類別，但從 ES6 開始引入了**class 語法**，使得物件導向的結構更清晰。
+
+### 總結：
+- 物件可以透過物件字面量定義，屬性值可以是各種數據類型。
+- 物件屬性可以使用點標記或括號標記來訪問和動態添加。
+- 雖然 JavaScript 現在支援 `class` 語法，但它的物件系統與傳統的 OOP 語言（如 Java）不同。
+
+## Functions
+
+1. **箭頭函數 (Arrow Function) 定義**：
+   - 完整的箭頭函數定義如下：
+     ```javascript
+     const sum = (p1, p2) => {
+       console.log(p1)
+       console.log(p2)
+       return p1 + p2
+     }
+     ```
+   - 呼叫方式：
+     ```javascript
+     const result = sum(1, 5)
+     console.log(result)  // 6
+     ```
+
+2. **簡化箭頭函數**：
+   - 當只有單一個參數時，可以省略括號：
+     ```javascript
+     const square = p => {
+       return p * p
+     }
+     ```
+   - 當函數只有一個表達式時，可以省略大括號與 `return` 關鍵字：
+     ```javascript
+     const square = p => p * p
+     ```
+
+3. **箭頭函數與陣列操作**：
+   - 箭頭函數在處理陣列時非常實用，例如使用 `map` 方法：
+     ```javascript
+     const t = [1, 2, 3]
+     const tSquared = t.map(p => p * p)
+     // tSquared = [1, 4, 9]
+     ```
+
+4. **傳統函數定義**：
+   - 在 ES6 之前，JavaScript 使用 `function` 關鍵字來定義函數。
+   - **命名函數宣告 (Function Declaration)**：
+     ```javascript
+     function product(a, b) {
+       return a * b
+     }
+     const result = product(2, 6)  // 12
+     ```
+   - **函數表達式 (Function Expression)**：
+     - 可以不用為函數命名，直接將函數賦值給變數：
+     ```javascript
+     const average = function(a, b) {
+       return (a + b) / 2
+     }
+     const result = average(2, 5)  // 3.5
+     ```
+
+5. **箭頭函數的使用**：
+   - 在這門課程中，我們將統一使用箭頭函數來定義所有函數，因為它語法簡潔且與現代 JavaScript 開發風格一致。
+
+### 總結：
+- **箭頭函數** 是現代 JavaScript 中推薦的函數定義方式，尤其適合簡潔的表達式和陣列操作。
+- **傳統函數** 使用 `function` 關鍵字定義，可以是命名函數或匿名函數，但箭頭函數在現代 JavaScript 中更常用。
