@@ -624,3 +624,92 @@ JSX 是一種看起來像 HTML 的 JavaScript 語法擴展，讓你能夠在 Rea
 ### 總結：
 - **箭頭函數** 是現代 JavaScript 中推薦的函數定義方式，尤其適合簡潔的表達式和陣列操作。
 - **傳統函數** 使用 `function` 關鍵字定義，可以是命名函數或匿名函數，但箭頭函數在現代 JavaScript 中更常用。
+
+## Object Methods and "this" 
+
+1. **方法定義與 `this`**：
+   - 在 JavaScript 中，物件的方法可以透過將函數分配給屬性來定義：
+     ```javascript
+     const arto = {
+       name: 'Arto Hellas',
+       greet: function() {
+         console.log('hello, my name is ' + this.name)
+       },
+     }
+     arto.greet()  // "hello, my name is Arto Hellas"
+     ```
+
+2. **動態添加方法**：
+   - 方法可以在物件創建後動態添加：
+     ```javascript
+     arto.growOlder = function() {
+       this.age += 1
+     }
+     ```
+
+3. **方法引用與 `this` 問題**：
+   - 當把方法的引用分配給變數並執行，`this` 會變為全域物件，導致意外行為：
+     ```javascript
+     const referenceToGreet = arto.greet
+     referenceToGreet()  // "hello, my name is undefined"
+     ```
+   - `this` 是根據函數的呼叫方式來定義的，而不是函數所在的物件。
+
+4. **解決 `this` 問題**：
+   - 可以使用 `bind()` 方法將 `this` 綁定到原物件，保證 `this` 不變：
+     ```javascript
+     setTimeout(arto.greet.bind(arto), 1000)
+     ```
+
+5. **箭頭函數與 `this`**：
+   - 箭頭函數不會綁定自己的 `this`，它會繼承來自作用域的 `this`。因此，箭頭函數不適合作為物件的方法。
+
+6. **更多學習資源**：
+   - `this` 是 JavaScript 中比較難掌握的概念，推薦觀看相關教程來深入了解，例如 egghead.io 上的 "Understand JavaScript's this Keyword in Depth"。
+
+### 總結：
+- `this` 是基於方法的呼叫方式來決定的，當方法通過變數調用或透過 `setTimeout` 等調用時，`this` 會指向全域物件。
+- 使用 `bind()` 可以確保 `this` 指向正確的物件。
+- 箭頭函數雖然可以解決某些 `this` 相關問題，但不適合用作物件方法。
+
+
+## Classes
+
+1. **JavaScript 中的類**：
+   - 雖然 JavaScript 沒有傳統的面向對象語言中的類機制，但 ES6 引入了 **class 語法**，使得類的定義變得簡單。
+   - 類的行為模仿了面向對象語言中的類，但其核心仍然基於 JavaScript 的**原型繼承**。
+
+2. **類的定義與使用**：
+   - 使用 `class` 關鍵字定義類，並通過 `constructor` 函數來設置物件的初始屬性。
+   - 方法可以直接在類內部定義，如 `greet()` 方法：
+     ```javascript
+     class Person {
+       constructor(name, age) {
+         this.name = name
+         this.age = age
+       }
+       greet() {
+         console.log('hello, my name is ' + this.name)
+       }
+     }
+
+     const adam = new Person('Adam Ondra', 29)
+     adam.greet()  // "hello, my name is Adam Ondra"
+     ```
+
+3. **類的實例化**：
+   - 使用 `new` 關鍵字來創建類的實例。每個實例都有獨立的屬性值和方法。
+   - 例如，`adam` 和 `janja` 是 `Person` 類的兩個實例。
+
+4. **類與 JavaScript 的型別系統**：
+   - 儘管類的語法和行為類似於傳統面向對象語言中的類，但在 JavaScript 中，類實際上仍然是基於**物件**的。所有的類型仍然是 `Object`。
+
+5. **類語法的爭議**：
+   - ES6 引入的 `class` 語法引發了一些爭議，因為它掩蓋了 JavaScript 原型繼承的真實機制。有興趣的讀者可以查看相關的討論文章，例如 “Not Awesome: ES6 Classes”。
+   
+6. **React 中的類**：
+   - 在舊版的 React 和 Node.js 中，`class` 語法被廣泛使用。然而，隨著 React Hooks 的引入，我們在這門課程中不再需要使用 `class` 來管理狀態或定義元件。
+
+### 總結：
+- **ES6 class** 提供了類似於傳統面向對象語言中的類的語法，但它的底層仍然基於 JavaScript 的原型繼承。
+- 雖然理解 `class` 語法對於舊版 React 和 Node.js 有幫助，但在使用 React Hooks 時，`class` 並非必需。
