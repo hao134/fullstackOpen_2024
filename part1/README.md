@@ -713,3 +713,34 @@ JSX 是一種看起來像 HTML 的 JavaScript 語法擴展，讓你能夠在 Rea
 ### 總結：
 - **ES6 class** 提供了類似於傳統面向對象語言中的類的語法，但它的底層仍然基於 JavaScript 的原型繼承。
 - 雖然理解 `class` 語法對於舊版 React 和 Node.js 有幫助，但在使用 React Hooks 時，`class` 並非必需。
+
+# C. Component state, event handlers
+## Component Helper Functions
+
+1. **定義幫助函數**：
+   - 可以在 React 元件內部定義幫助函數，以分離複雜邏輯，使程式碼更具可讀性。例如，在 `Hello` 元件中，猜測出生年份的邏輯被提取到 `bornYear` 函數中：
+     ```javascript
+     const Hello = (props) => {
+       const bornYear = () => {
+         const yearNow = new Date().getFullYear()
+         return yearNow - props.age
+       }
+
+       return (
+         <div>
+           <p>Hello {props.name}, you are {props.age} years old</p>
+           <p>So you were probably born in {bornYear()}</p>
+         </div>
+       )
+     }
+     ```
+
+2. **直接存取 `props`**：
+   - 幫助函數不需要額外的參數來獲取元件的 `props`，因為它們可以直接存取元件內的 `props`。
+   
+3. **JavaScript 中的函數定義**：
+   - 在 JavaScript 中，定義函數嵌套在其他函數內是常見且簡便的做法，這與某些其他語言（如 Java）不同，在這些語言中，函數內定義函數較為複雜。
+
+### 總結：
+- 可以在元件內部定義幫助函數，將複雜邏輯從 JSX 中抽離出來。
+- 在 JavaScript 中，函數內定義函數是常見的設計模式，這樣可以提高代碼的可讀性和結構性。
