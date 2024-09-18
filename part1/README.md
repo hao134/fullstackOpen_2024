@@ -848,3 +848,42 @@ JSX 是一種看起來像 HTML 的 JavaScript 語法擴展，讓你能夠在 Rea
 ### 總結：
 - 當 `counter` 值變化時，我們需要手動調用 `render` 來重新渲染元件。
 - 雖然可以透過 `setInterval` 來實現自動更新，但這不是推薦的做法，後續會介紹更好的方式。
+
+## Stateful component
+### Stateful Component - 筆記
+
+1. **無狀態元件**：
+   - 到目前為止，我們的元件都沒有狀態，元件的外觀不會根據用戶的操作或其他變化動態更新。
+
+2. **引入 `useState`**：
+   - 透過 React 的 `useState` hook，可以為元件引入**狀態**。狀態允許我們在元件的生命週期中追踪和更新數據。
+   - 初始化範例：
+     ```javascript
+     const [ counter, setCounter ] = useState(0)
+     ```
+   - 這行代碼會設置一個名為 `counter` 的狀態變數，初始值為 0。`setCounter` 是用來更新 `counter` 的函數。
+
+3. **自動更新 `counter`**：
+   - 透過 `setTimeout` 每秒自動增加 `counter` 的值：
+     ```javascript
+     setTimeout(
+       () => setCounter(counter + 1),
+       1000
+     )
+     ```
+   - 當 `setCounter` 被調用後，React 會重新渲染元件，這樣每次 `counter` 的值都會增加 1，並每秒更新畫面。
+
+4. **元件的重新渲染**：
+   - 每當狀態被修改（`setCounter` 被調用）時，React 會重新執行元件的函數，這會再次呼叫 `useState` 並返回新的狀態值。
+   - 因此，`counter` 每次遞增後，元件會重新渲染，並顯示新的值。
+
+5. **偵錯與除錯**：
+   - 若元件未按預期渲染，可以使用 `console.log` 來檢查元件的狀態和渲染流程：
+     ```javascript
+     console.log('rendering...', counter)
+     ```
+   - 在開發過程中，確保開啟瀏覽器控制台以便追踪輸出。
+
+### 總結：
+- `useState` 允許我們為 React 元件添加狀態，從而能夠動態更新 UI。
+- 當狀態改變時，React 會自動重新渲染元件，這使得應用程序能夠響應用戶行為或其他變化。
