@@ -959,3 +959,53 @@ JSX 是一種看起來像 HTML 的 JavaScript 語法擴展，讓你能夠在 Rea
 ### 總結：
 - React 事件處理使用類似 HTML 的方式，但將事件處理函數設置為 JavaScript 函數。
 - 可以使用內聯或獨立定義的函數來處理按鈕的 `click` 事件，並透過 `setCounter` 來動態更新應用的狀態。
+
+## An Event Handler is a Function
+### An Event Handler is a Function - 筆記
+
+1. **事件處理器的定義**：
+   - 在 React 中，事件處理器（event handler）通常通過將 `onClick` 等屬性設置為一個**函數**或**函數引用**來定義：
+     ```javascript
+     <button onClick={() => setCounter(counter + 1)}> 
+       plus
+     </button>
+     ```
+
+2. **錯誤的方式**：
+   - 若將 `onClick` 屬性設置為函數的調用結果，而不是一個函數引用，會導致應用錯誤：
+     ```javascript
+     <button onClick={setCounter(counter + 1)}> 
+       plus
+     </button>
+     ```
+   - 這會直接執行 `setCounter(counter + 1)`，導致元件在渲染時不斷更新狀態，並進入無限重渲染循環。
+
+3. **正確的方式**：
+   - 應該將 `onClick` 設置為一個函數或函數引用，這樣函數只有在按鈕被點擊時才會執行：
+     ```javascript
+     <button onClick={() => setCounter(counter + 1)}> 
+       plus
+     </button>
+     ```
+
+4. **將事件處理函數提取到變數**：
+   - 雖然在 JSX 中直接定義簡單的事件處理函數是可以接受的，但更好的做法是將事件處理器提取到單獨的函數中：
+     ```javascript
+     const increaseByOne = () => setCounter(counter + 1)
+     const setToZero = () => setCounter(0)
+     ```
+
+5. **最終實現**：
+   - 事件處理器被提取成獨立的函數，`onClick` 屬性設為這些函數的引用：
+     ```javascript
+     <button onClick={increaseByOne}>
+       plus
+     </button>
+     <button onClick={setToZero}>
+       zero
+     </button>
+     ```
+
+### 總結：
+- 事件處理器應該是**函數**或**函數引用**，而不是函數的調用結果。
+- 將事件處理函數提取出來，讓代碼更具可讀性和可維護性。
