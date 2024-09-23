@@ -887,3 +887,75 @@ JSX 是一種看起來像 HTML 的 JavaScript 語法擴展，讓你能夠在 Rea
 ### 總結：
 - `useState` 允許我們為 React 元件添加狀態，從而能夠動態更新 UI。
 - 當狀態改變時，React 會自動重新渲染元件，這使得應用程序能夠響應用戶行為或其他變化。
+
+## Event Handling
+### Event Handling - 筆記
+
+1. **事件處理 (Event Handling)**：
+   - 用戶與網頁互動時可以觸發各種事件，如 `click` 事件。
+   - 在 React 中，我們可以為元素的事件屬性（如 `onClick`）指定一個事件處理函數。
+
+2. **註冊事件處理函數**：
+   - 我們可以將 `button` 元素的 `onClick` 屬性設為對應的事件處理函數：
+     ```javascript
+     const App = () => {
+       const [ counter, setCounter ] = useState(0)
+
+       const handleClick = () => {
+         console.log('clicked')
+       }
+
+       return (
+         <div>
+           <div>{counter}</div>
+           <button onClick={handleClick}>
+             plus
+           </button>
+         </div>
+       )
+     }
+     ```
+   - 每次點擊按鈕，`handleClick` 函數會被調用，並輸出 `'clicked'` 到控制台。
+
+3. **內聯定義事件處理函數**：
+   - 事件處理函數也可以直接內聯定義於 `onClick`：
+     ```javascript
+     <button onClick={() => console.log('clicked')}>
+       plus
+     </button>
+     ```
+
+4. **更新狀態的事件處理**：
+   - 我們可以將 `onClick` 設定為更新狀態的函數，以實現點擊按鈕時增加 `counter`：
+     ```javascript
+     <button onClick={() => setCounter(counter + 1)}>
+       plus
+     </button>
+     ```
+
+5. **添加重置按鈕**：
+   - 可以再添加一個按鈕，用於重置 `counter` 的值為 0：
+     ```javascript
+     const App = () => {
+       const [ counter, setCounter ] = useState(0)
+
+       return (
+         <div>
+           <div>{counter}</div>
+           <button onClick={() => setCounter(counter + 1)}>
+             plus
+           </button>
+           <button onClick={() => setCounter(0)}> 
+             zero
+           </button>
+         </div>
+       )
+     }
+     ```
+
+6. **應用程式完成**：
+   - 現在我們有兩個按鈕：一個用於增加 `counter`，另一個用於重置 `counter`。
+
+### 總結：
+- React 事件處理使用類似 HTML 的方式，但將事件處理函數設置為 JavaScript 函數。
+- 可以使用內聯或獨立定義的函數來處理按鈕的 `click` 事件，並透過 `setCounter` 來動態更新應用的狀態。
