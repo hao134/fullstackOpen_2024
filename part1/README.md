@@ -1008,4 +1008,79 @@ JSX 是一種看起來像 HTML 的 JavaScript 語法擴展，讓你能夠在 Rea
 
 ### 總結：
 - 事件處理器應該是**函數**或**函數引用**，而不是函數的調用結果。
-- 將事件處理函數提取出來，讓代碼更具可讀性和可維護性。
+- 將事件處理函數提取出來，讓代碼更具可讀性和可維護性
+
+## Passing State to Child Components
+### Passing State to Child Components - 筆記
+
+1. **組件拆分**：
+   - React 中推薦將元件設計為小型且可重用的，這樣便於維護和跨應用使用。
+   - 我們將應用拆分為三個組件：一個用來顯示計數器值，兩個用來表示按鈕。
+
+2. **提升狀態 (Lifting State Up)**：
+   - 當多個元件需要共享狀態時，將狀態提升到它們的**最近共同祖先**是最佳實踐。這使得狀態更易於管理和共享。
+   - 我們把 `counter` 狀態提升到 `App` 元件中，並通過 `props` 傳遞給子元件。
+
+3. **`Display` 組件**：
+   - `Display` 負責顯示計數器值，`App` 元件將 `counter` 狀態傳遞給它：
+     ```javascript
+     const Display = (props) => {
+       return (
+         <div>{props.counter}</div>
+       )
+     }
+     ```
+
+4. **使用 `Display` 組件**：
+   - 在 `App` 中，我們通過 `props` 傳遞 `counter` 狀態給 `Display`：
+     ```javascript
+     const App = () => {
+       const [ counter, setCounter ] = useState(0)
+
+       return (
+         <div>
+           <Display counter={counter} />
+         </div>
+       )
+     }
+     ```
+
+5. **`Button` 組件**：
+   - 我們為按鈕創建一個 `Button` 組件，該元件通過 `props` 接收點擊事件處理函數 (`onClick`) 和按鈕文本 (`text`)：
+     ```javascript
+     const Button = (props) => {
+       return (
+         <button onClick={props.onClick}>
+           {props.text}
+         </button>
+       )
+     }
+     ```
+
+6. **使用 `Button` 組件**：
+   - 在 `App` 中，使用 `Button` 組件並傳遞按鈕的文本和點擊事件處理函數：
+     ```javascript
+     const App = () => {
+       const [ counter, setCounter ] = useState(0)
+
+       const increaseByOne = () => setCounter(counter + 1)
+       const decreaseByOne = () => setCounter(counter - 1)
+       const setToZero = () => setCounter(0)
+
+       return (
+         <div>
+           <Display counter={counter}/>
+           <Button onClick={increaseByOne} text='plus' />
+           <Button onClick={setToZero} text='zero' />
+           <Button onClick={decreaseByOne} text='minus' />
+         </div>
+       )
+     }
+     ```
+
+7. **React 的命名慣例**：
+   - React 中，常見的命名慣例是使用 `onSomething` 來命名接收事件處理函數的 `props`，而使用 `handleSomething` 作為實際處理事件的函數名稱。
+
+### 總結：
+- **狀態提升**是 React 管理共享狀態的最佳實踐，將狀態存儲在共同祖先元件中，並通過 `props` 傳遞給子元件。
+- `Button` 和 `Display` 元件是小型、可重用的元件，它們通過 `props` 接收狀態和事件處理函數。
