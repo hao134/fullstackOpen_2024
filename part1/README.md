@@ -1085,7 +1085,7 @@ JSX 是一種看起來像 HTML 的 JavaScript 語法擴展，讓你能夠在 Rea
 - **狀態提升**是 React 管理共享狀態的最佳實踐，將狀態存儲在共同祖先元件中，並通過 `props` 傳遞給子元件。
 - `Button` 和 `Display` 元件是小型、可重用的元件，它們通過 `props` 接收狀態和事件處理函數。
 
-# D. A more complex state, debugging React apps
+# d. A more complex state, debugging React apps
 ## Complex state
 ### Complex State - 筆記
 
@@ -1136,3 +1136,87 @@ JSX 是一種看起來像 HTML 的 JavaScript 語法擴展，讓你能夠在 Rea
 - 如果需要使用單個物件來存儲狀態，可以使用展開語法來更新部分屬性，但要避免直接修改狀態物件。
 - 根據應用的需求，選擇最適合的狀態結構來維護清晰且易於管理的代碼。
 
+### Handling Arrays - 筆記
+
+1. **新增陣列狀態**：
+   - 我們可以使用 `useState` 來跟蹤按鈕點擊事件，並存儲所有點擊記錄到一個陣列 `allClicks` 中：
+     ```javascript
+     const [allClicks, setAll] = useState([])
+     ```
+
+2. **更新狀態時不直接修改陣列**：
+   - 當點擊左邊按鈕時，我們使用 `concat` 方法來創建一個新的陣列，將字母 `'L'` 添加到陣列中，並且不直接修改原陣列：
+     ```javascript
+     const handleLeftClick = () => {
+       setAll(allClicks.concat('L'))
+       setLeft(left + 1)
+     }
+     ```
+   - 對於右邊按鈕也同樣操作：
+     ```javascript
+     const handleRightClick = () => {
+       setAll(allClicks.concat('R'))
+       setRight(right + 1)
+     }
+     ```
+
+3. **使用 `concat` 而非 `push`**：
+   - **不要**使用 `push` 方法來修改狀態，因為 `push` 會直接修改原陣列，這在 React 中是不允許的。雖然使用 `push` 可能看起來正常工作，但它會導致不可預期的副作用：
+     ```javascript
+     // 錯誤示範
+     allClicks.push('L')
+     setAll(allClicks)
+     ```
+
+4. **顯示點擊記錄**：
+   - 使用 `join` 方法將 `allClicks` 陣列中的所有元素連接成一個字串，並以空格分隔：
+     ```javascript
+     <p>{allClicks.join(' ')}</p>
+     ```
+   - `join(' ')` 會將陣列元素用空格連接成字串，顯示所有點擊記錄。
+
+### 總結：
+- 使用 `useState` 來跟蹤按鈕的點擊事件並記錄到陣列中。
+- 使用 `concat` 方法來更新陣列，避免直接修改狀態。
+- 使用 `join` 方法來將陣列轉換為字串，方便顯示在頁面上。
+
+:::info
+當我們使用 **`concat`** 而不是 **`push`** 來更新 React 中的狀態時，核心原因是 **React 不允許直接修改狀態**。我們來詳細解釋這兩者的區別及其背後的原因。
+
+### 1. **`concat` 的特點**
+   - **`concat`** 方法**不會改變原陣列**，而是返回一個**新陣列**，並將新元素添加到新陣列中。
+   - 在 React 中，當我們更新狀態時，我們應該創建一個新的狀態物件（或陣列），然後將其傳遞給 `setState` 函數，這樣可以保持**不可變性**（immutability），確保 React 能夠正確追蹤狀態變化，並有效進行重渲染。
+
+   ```javascript
+   const handleLeftClick = () => {
+     setAll(allClicks.concat('L'))  // 返回新陣列，未修改原陣列
+     setLeft(left + 1)
+   }
+   ```
+
+   在這種情況下，React 知道 `allClicks` 的值發生了變化，因為我們使用 `concat` 創建了一個新陣列，這讓 React 可以正確地更新畫面。
+
+### 2. **`push` 的特點**
+   - **`push`** 方法會直接改變原陣列，並在其末尾添加新元素。
+   - 如果你使用 `push` 方法來更新狀態，你會直接修改現有的 `allClicks` 陣列，而不是創建一個新的陣列。
+   - **這會破壞 React 的不可變性規則**，因為 React 依賴狀態的不可變性來確定是否需要重新渲染元件。如果你修改了現有陣列，React 可能無法正確檢測到狀態變化，從而導致無法正確觸發重渲染或出現難以預測的錯誤。
+
+   ```javascript
+   // 錯誤示範
+   const handleLeftClick = () => {
+     allClicks.push('L')  // 直接修改原陣列
+     setAll(allClicks)    // React 無法正確追蹤變化
+     setLeft(left + 1)
+   }
+   ```
+
+   在這裡，雖然畫面看起來可能仍然正常運作，但由於 `push` 修改了原本的陣列，React 無法清楚地知道狀態已經變化，這可能導致 React 無法重新渲染元件或引發其他問題。
+
+### 3. **不可變性的重要性**
+   - **不可變性** 是 React 中的關鍵概念。當狀態發生變化時，我們應該創建一個新的狀態物件，而不是修改現有的狀態。這樣，React 可以通過比較新舊狀態，決定是否需要重新渲染元件。
+   - 使用 **`concat`** 保持陣列不可變，而 **`push`** 會破壞這種不可變性，這就是為什麼我們應該避免使用 `push` 來直接更新狀態。
+
+### 總結：
+- **`concat`** 創建新陣列，保持 React 狀態不可變性，讓 React 能夠正確追蹤變化和重渲染。
+- **`push`** 直接修改原陣列，會破壞不可變性，可能導致 React 無法正確地重渲染元件。
+:::
