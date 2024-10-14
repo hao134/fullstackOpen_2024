@@ -1084,3 +1084,55 @@ JSX 是一種看起來像 HTML 的 JavaScript 語法擴展，讓你能夠在 Rea
 ### 總結：
 - **狀態提升**是 React 管理共享狀態的最佳實踐，將狀態存儲在共同祖先元件中，並通過 `props` 傳遞給子元件。
 - `Button` 和 `Display` 元件是小型、可重用的元件，它們通過 `props` 接收狀態和事件處理函數。
+
+# D. A more complex state, debugging React apps
+## Complex state
+### Complex State - 筆記
+
+1. **使用多個 `useState`**：
+   - 當應用程式狀態變得複雜時，最簡單的方法是使用多個 `useState` 來分別管理不同的狀態。例如：
+     ```javascript
+     const [left, setLeft] = useState(0)
+     const [right, setRight] = useState(0)
+     ```
+
+2. **將狀態存儲在單個物件中**：
+   - 另一種方法是將多個狀態存入一個物件中。例如，將 `left` 和 `right` 計數器存入一個物件：
+     ```javascript
+     const [clicks, setClicks] = useState({ left: 0, right: 0 })
+     ```
+
+3. **事件處理函數**：
+   - 當按鈕被點擊時，我們需要更新整個狀態物件：
+     ```javascript
+     const handleLeftClick = () => {
+       const newClicks = { left: clicks.left + 1, right: clicks.right }
+       setClicks(newClicks)
+     }
+     ```
+
+4. **使用 Object Spread Syntax 簡化代碼**：
+   - 可以使用展開語法（spread syntax）簡化狀態更新邏輯：
+     ```javascript
+     const handleLeftClick = () => setClicks({ ...clicks, left: clicks.left + 1 })
+     const handleRightClick = () => setClicks({ ...clicks, right: clicks.right + 1 })
+     ```
+
+5. **避免直接修改狀態**：
+   - 不應該直接修改狀態物件，因為這會導致 React 無法正確追蹤狀態變化，可能引發預期外的副作用。必須創建新的狀態物件來更新狀態：
+     ```javascript
+     const handleLeftClick = () => {
+       // 錯誤示範：不應直接修改 clicks 物件
+       clicks.left++
+       setClicks(clicks)
+     }
+     ```
+
+6. **選擇合適的狀態結構**：
+   - 在某些情況下，將狀態存儲在一個複雜的數據結構中可能是有益的。但是，對於這個範例，將 `left` 和 `right` 分開儲存是更好的選擇。
+
+### 總結：
+- 在 React 中，使用多個 `useState` 來管理不同的狀態通常是最簡單的解決方案。
+- 如果需要使用單個物件來存儲狀態，可以使用展開語法來更新部分屬性，但要避免直接修改狀態物件。
+- 根據應用的需求，選擇最適合的狀態結構來維護清晰且易於管理的代碼。
+
