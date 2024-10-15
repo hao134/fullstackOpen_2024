@@ -1220,3 +1220,54 @@ JSX 是一種看起來像 HTML 的 JavaScript 語法擴展，讓你能夠在 Rea
 - **`concat`** 創建新陣列，保持 React 狀態不可變性，讓 React 能夠正確追蹤變化和重渲染。
 - **`push`** 直接修改原陣列，會破壞不可變性，可能導致 React 無法正確地重渲染元件。
 :::
+
+## Update of the State is Asynchronous
+### Update of the State is Asynchronous - 筆記
+
+1. **問題描述**：
+   - React 中的狀態更新是**異步**的，這意味著即使你呼叫了 `setState`，狀態不會立即更新。狀態的更新會在 React 決定重新渲染元件之前進行。因此，在相同的事件處理函數中，如果你立即使用剛剛更新的狀態，可能會發生狀態仍然是舊值的情況。
+
+2. **範例：按鈕點擊計數錯誤**：
+   - 我們希望在點擊按鈕時更新左邊和右邊的計數器，並同時更新總點擊次數（`total`），但結果 `total` 總是少一個：
+     ```javascript
+     const handleLeftClick = () => {
+       setAll(allClicks.concat('L'))
+       setLeft(left + 1)
+       setTotal(left + right)
+     }
+     ```
+
+3. **原因**：
+   - 即使呼叫了 `setLeft(left + 1)`，此時 `left` 的值還沒有更新。在同一函數中，`setTotal(left + right)` 使用的仍然是舊的 `left` 值。因此，`total` 計算錯誤。
+
+4. **解決方案：保存更新後的值**：
+   - 因為 `setState` 是異步的，我們可以先計算出更新後的 `left` 或 `right` 值，然後使用這些更新後的值來計算 `total`：
+     ```javascript
+     const handleLeftClick = () => {
+       setAll(allClicks.concat('L'))
+       const updatedLeft = left + 1
+       setLeft(updatedLeft)
+       setTotal(updatedLeft + right)
+     }
+     ```
+
+   - 同樣地，對 `right` 也需要進行同樣的處理：
+     ```javascript
+     const handleRightClick = () => {
+       setAll(allClicks.concat('R'))
+       const updatedRight = right + 1
+       setRight(updatedRight)
+       setTotal(left + updatedRight)
+     }
+     ```
+
+5. **為何 React 狀態是異步的？**：
+   - React 的狀態更新是異步的，以提高性能。這允許 React 可以在同一個更新週期中批量處理多個狀態更新，而不是每次呼叫 `setState` 時都立刻重新渲染元件。這樣可以減少不必要的重渲染次數，提升應用效能。
+
+6. **結論**：
+   - 當你需要依賴更新後的狀態值進行進一步操作時，**不要**直接依賴狀態本身，而是應該在事件處理函數中**手動計算**更新後的狀態，然後再執行相關邏輯。這樣可以避免由於狀態更新異步帶來的問題。
+
+### 總結：
+- React 的狀態更新是異步的，這意味著即使呼叫了 `setState`，狀態不會立即更新。
+- 當你在同一函數中需要依賴更新後的狀態值時，應該手動計算並使用這些更新後的值來進行操作。
+- 這樣可以確保邏輯基於正確的狀態值進行運算，避免異步更新帶來的問題。
