@@ -1271,3 +1271,61 @@ JSX 是一種看起來像 HTML 的 JavaScript 語法擴展，讓你能夠在 Rea
 - React 的狀態更新是異步的，這意味著即使呼叫了 `setState`，狀態不會立即更新。
 - 當你在同一函數中需要依賴更新後的狀態值時，應該手動計算並使用這些更新後的值來進行操作。
 - 這樣可以確保邏輯基於正確的狀態值進行運算，避免異步更新帶來的問題。
+
+## Conditional Rendering
+### Conditional Rendering - 筆記
+
+1. **條件渲染概念**：
+   - 在 React 中，根據應用狀態渲染不同的元素稱為**條件渲染**（Conditional Rendering）。這允許我們根據應用狀態的變化來顯示不同的 UI 元素。
+
+2. **`History` 元件**：
+   - 我們創建了 `History` 元件來顯示按鈕的點擊歷史。
+   - 如果 `allClicks` 陣列為空，則顯示一條提示訊息：
+     ```javascript
+     if (props.allClicks.length === 0) {
+       return (
+         <div>
+           the app is used by pressing the buttons
+         </div>
+       )
+     }
+     ```
+   - 如果 `allClicks` 陣列不為空，則顯示按鈕點擊的歷史：
+     ```javascript
+     return (
+       <div>
+         button press history: {props.allClicks.join(' ')}
+       </div>
+     )
+     ```
+
+3. **在 `App` 中使用 `History`**：
+   - 將 `allClicks` 狀態傳遞給 `History` 元件，並依據是否有按鈕點擊來渲染不同的內容：
+     ```javascript
+     <History allClicks={allClicks} />
+     ```
+
+4. **Button 元件的重構**：
+   - 我們重構了 `Button` 元件，將按鈕的 `onClick` 事件處理函數作為 `props` 傳遞，從而可以靈活地使用按鈕：
+     ```javascript
+     const Button = ({ handleClick, text }) => (
+       <button onClick={handleClick}>
+         {text}
+       </button>
+     )
+     ```
+
+5. **最終 `App` 元件**：
+   - 將 `Button` 元件應用於左右按鈕，並傳入不同的事件處理函數和按鈕文本：
+     ```javascript
+     <Button handleClick={handleLeftClick} text='left' />
+     <Button handleClick={handleRightClick} text='right' />
+     ```
+
+6. **條件渲染的實現方式**：
+   - React 支援多種條件渲染的方式，包括 `if` 語句、三元運算符 (`? :`)、以及短路運算符 (`&&`) 等。我們這裡使用了簡單的 `if` 語句來選擇渲染內容。
+
+### 總結：
+- **條件渲染**允許我們根據應用狀態動態改變 UI 顯示，這是 React 中處理狀態變化的重要方式。
+- **`History` 元件**根據按鈕點擊歷史動態顯示不同的內容，從而實現簡單的條件渲染。
+- **`Button` 元件**被重構成可重用元件，方便在應用中多次使用。
