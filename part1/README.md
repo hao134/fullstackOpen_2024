@@ -1329,3 +1329,62 @@ JSX 是一種看起來像 HTML 的 JavaScript 語法擴展，讓你能夠在 Rea
 - **條件渲染**允許我們根據應用狀態動態改變 UI 顯示，這是 React 中處理狀態變化的重要方式。
 - **`History` 元件**根據按鈕點擊歷史動態顯示不同的內容，從而實現簡單的條件渲染。
 - **`Button` 元件**被重構成可重用元件，方便在應用中多次使用。
+
+## Rules of Hooks
+### Rules of Hooks - 筆記
+
+React Hooks 有一些規則和限制，必須遵守以確保應用程序正確使用基於 hooks 的狀態函數。違反這些規則可能會導致應用程序異常運行。以下是使用 Hooks 的主要規則：
+
+1. **只在函數元件中使用 Hooks**：
+   - Hooks 只能在定義 React 元件的函數內部使用，**不得**在其他任何地方（如條件語句、循環、或嵌套函數）內調用 `useState` 或 `useEffect` 等 Hooks。
+
+2. **Hooks 的調用順序不可變**：
+   - React 需要確保 Hooks 在每次渲染時按照相同的順序被調用，這樣才能正確追蹤狀態。如果 Hooks 的調用順序改變，React 將無法正確更新狀態，導致應用行為錯誤。
+
+3. **禁止在條件、循環或嵌套函數中使用 Hooks**：
+   - **條件語句內禁止使用 Hooks**：
+     ```javascript
+     if (age > 10) {
+       // 錯誤示範
+       const [foobar, setFoobar] = useState(null)
+     }
+     ```
+     在條件語句內使用 `useState` 會導致每次條件變化時 Hooks 的調用順序發生改變，這會破壞 React 的狀態管理。
+
+   - **循環內禁止使用 Hooks**：
+     ```javascript
+     for (let i = 0; i < age; i++) {
+       // 錯誤示範
+       const [rightWay, setRightWay] = useState(false)
+     }
+     ```
+     在循環中使用 Hooks 也會改變 Hooks 的調用順序，這是錯誤的做法。
+
+   - **嵌套函數中禁止使用 Hooks**：
+     ```javascript
+     const notGood = () => {
+       // 錯誤示範
+       const [x, setX] = useState(-1000)
+     }
+     ```
+     嵌套函數內使用 `useState` 會導致 React 無法正確追蹤狀態，這是非法的。
+
+4. **正確使用 Hooks 的方式**：
+   - Hooks 必須始終在 React 元件函數的頂層調用，而不是在條件語句或循環內，這確保了每次渲染時它們都按照固定的順序被調用。例如：
+     ```javascript
+     const App = () => {
+       const [age, setAge] = useState(0)
+       const [name, setName] = useState('Juha Tauriainen')
+
+       return (
+         <div>
+           {/* 正常的 Hooks 調用 */}
+         </div>
+       )
+     }
+     ```
+
+### 總結：
+- **只在 React 函數元件中使用 Hooks**。
+- **保持 Hooks 的調用順序一致**，不要在條件語句、循環或嵌套函數內調用 Hooks。
+- 遵守這些規則可以確保 React 正確追蹤狀態，並防止應用行為異常。
