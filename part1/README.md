@@ -1388,3 +1388,65 @@ React Hooks 有一些規則和限制，必須遵守以確保應用程序正確�
 - **只在 React 函數元件中使用 Hooks**。
 - **保持 Hooks 的調用順序一致**，不要在條件語句、循環或嵌套函數內調用 Hooks。
 - 遵守這些規則可以確保 React 正確追蹤狀態，並防止應用行為異常。
+
+## Event Handling Revisited
+### Event Handling Revisited - 筆記
+
+1. **事件處理函數的基本原則**：
+   - **事件處理函數**必須是**函數**或**函數的參考**。不能是字符串或其他類型的值。
+   - 如果將事件處理函數設為非函數類型，React 會在控制台發出警告，並且事件不會正常工作。例如，以下代碼是錯誤的：
+     ```javascript
+     <button onClick="crap...">button</button> // 錯誤
+     ```
+
+2. **常見錯誤示範**：
+   - 使用非函數類型作為 `onClick`：
+     ```javascript
+     <button onClick={value + 1}>button</button> // 錯誤
+     ```
+   - 嘗試直接賦值：
+     ```javascript
+     <button onClick={value = 0}>button</button> // 錯誤
+     ```
+
+3. **函數調用的問題**：
+   - 直接將函數調用作為事件處理器也是不正確的。例如：
+     ```javascript
+     <button onClick={console.log('clicked the button')}>button</button> // 錯誤
+     ```
+     - 這會導致函數在元件渲染時被立即執行，而不是在按鈕點擊時執行。因為事件處理器必須是一個**函數的引用**，而不是函數調用的結果。
+
+4. **正確的事件處理方法**：
+   - 正確的做法是使用**箭頭函數**或**函數參考**來處理事件：
+     ```javascript
+     <button onClick={() => console.log('clicked the button')}>button</button>
+     ```
+     - 這樣可以確保函數只有在點擊按鈕時才會執行。
+
+5. **使用 `setValue` 來重設狀態**：
+   - 如果要在點擊按鈕時更新狀態，可以使用 `setValue` 並通過箭頭函數來執行：
+     ```javascript
+     <button onClick={() => setValue(0)}>button</button>
+     ```
+
+6. **將事件處理器提取為單獨函數**：
+   - 雖然直接在 JSX 中定義事件處理函數是可以的，但通常我們會將事件處理函數提取到元件內部的變數中，這樣更容易閱讀和維護：
+     ```javascript
+     const handleClick = () => console.log('clicked the button');
+     <button onClick={handleClick}>button</button>
+     ```
+
+7. **複合事件處理器**：
+   - 如果事件處理器包含多條命令，可以使用大括號語法定義更複雜的事件處理邏輯。例如，重設狀態並記錄點擊事件：
+     ```javascript
+     const handleClick = () => {
+       console.log('clicked the button');
+       setValue(0);
+     }
+     ```
+
+### 總結：
+- 事件處理器必須是一個**函數參考**，不能是函數調用、賦值操作或其他非函數類型。
+- 使用**箭頭函數**來定義事件處理器，以確保函數只在事件發生時被調用。
+- 建議將事件處理函數提取到 JSX 外部，這樣代碼更清晰易讀。
+- 當需要處理多個操作時，可以使用大括號定義複合的事件處理器。
