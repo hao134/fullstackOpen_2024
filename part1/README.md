@@ -1518,3 +1518,44 @@ React Hooks 有一些規則和限制，必須遵守以確保應用程序正確�
 - **函數返回函數**是創建靈活的、可自定義的事件處理器的一種強大模式。
 - 該模式允許你通過參數來自定義事件處理邏輯，特別是當處理器需要不同參數時。
 - 可以選擇使用返回函數的方式或直接在 `onClick` 中定義事件處理器，這取決於個人編碼習慣。
+
+## Passing Event Handlers to Child Components
+### Passing Event Handlers to Child Components - 筆記
+
+1. **將按鈕抽離成獨立元件**：
+   - 將按鈕部分提取為一個獨立的 `Button` 元件，這樣可以重用按鈕邏輯，並讓代碼更具可讀性。`Button` 元件接收兩個 `props`：
+     - `handleClick`: 傳遞的事件處理函數。
+     - `text`: 按鈕上顯示的文字。
+
+   - `Button` 元件實現如下：
+     ```javascript
+     const Button = (props) => (
+       <button onClick={props.handleClick}>
+         {props.text}
+       </button>
+     )
+     ```
+
+2. **在主元件 `App` 中使用 `Button` 元件**：
+   - 在 `App` 元件中，我們可以用 `Button` 元件來代替原本的按鈕。每個按鈕需要不同的事件處理邏輯（如重置、設置為 1000、增量等），這些邏輯通過 `handleClick` 傳遞給 `Button`：
+     ```javascript
+     const App = (props) => {
+       return (
+         <div>
+           {value}
+           <Button handleClick={() => setToValue(1000)} text="thousand" />
+           <Button handleClick={() => setToValue(0)} text="reset" />
+           <Button handleClick={() => setToValue(value + 1)} text="increment" />
+         </div>
+       )
+     }
+     ```
+
+3. **使用注意事項**：
+   - 在使用 `Button` 元件時，需要確保傳遞的 `props` 名稱正確，特別是 `handleClick` 和 `text` 屬性。
+   - 這種模式有助於重用按鈕邏輯，減少代碼重複。
+
+### 總結：
+- **抽離按鈕元件**有助於提升代碼的可讀性和可重用性。
+- 事件處理函數通過 `props` 傳遞給子元件 `Button`，從而在按鈕上執行不同的操作。
+- 使用正確的 `props` 名稱來傳遞事件處理函數和按鈕文字是關鍵。
