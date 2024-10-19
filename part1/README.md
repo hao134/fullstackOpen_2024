@@ -1519,6 +1519,7 @@ React Hooks 有一些規則和限制，必須遵守以確保應用程序正確�
 - 該模式允許你通過參數來自定義事件處理邏輯，特別是當處理器需要不同參數時。
 - 可以選擇使用返回函數的方式或直接在 `onClick` 中定義事件處理器，這取決於個人編碼習慣。
 
+
 ## Passing Event Handlers to Child Components
 ### Passing Event Handlers to Child Components - 筆記
 
@@ -1559,3 +1560,50 @@ React Hooks 有一些規則和限制，必須遵守以確保應用程序正確�
 - **抽離按鈕元件**有助於提升代碼的可讀性和可重用性。
 - 事件處理函數通過 `props` 傳遞給子元件 `Button`，從而在按鈕上執行不同的操作。
 - 使用正確的 `props` 名稱來傳遞事件處理函數和按鈕文字是關鍵。
+
+## Do Not Define Components Within Components
+### Do Not Define Components Within Components - 筆記
+
+1. **避免在元件內部定義其他元件**：
+   - 雖然技術上可以在一個 React 元件內部定義另一個元件，但這並不是推薦的做法，因為它會帶來潛在問題，特別是影響效能。
+   - 例如，將 `Display` 元件定義在 `App` 元件內部，這會導致 React 每次渲染 `App` 時都將 `Display` 視為一個新的元件，無法進行性能優化。
+
+2. **性能問題**：
+   - React 依賴元件的穩定性來進行優化，當元件被重複定義時，React 會認為這是新元件，無法重用之前的結果，這會導致不必要的重新渲染。
+   - 如果在每次渲染時創建新的元件，React 不能正確比較這些元件的狀態，進而影響性能。
+
+3. **正確的做法**：
+   - 應將所有元件定義在 React 元件函數外部，這樣可以確保它們只在需要時被創建，從而讓 React 進行正確的性能優化。
+   - 例如，將 `Display` 和 `Button` 元件定義在 `App` 元件外部：
+     ```javascript
+     const Display = props => <div>{props.value}</div>;
+
+     const Button = (props) => (
+       <button onClick={props.handleClick}>
+         {props.text}
+       </button>
+     );
+
+     const App = () => {
+       const [value, setValue] = useState(10);
+
+       const setToValue = newValue => {
+         console.log('value now', newValue);
+         setValue(newValue);
+       };
+
+       return (
+         <div>
+           <Display value={value} />
+           <Button handleClick={() => setToValue(1000)} text="thousand" />
+           <Button handleClick={() => setToValue(0)} text="reset" />
+           <Button handleClick={() => setToValue(value + 1)} text="increment" />
+         </div>
+       );
+     };
+     ```
+
+4. **總結**：
+   - **不要在一個元件內部定義其他元件**，這會導致性能問題。
+   - 將所有子元件的定義放在父元件函數之外，以便 React 正確進行性能優化和狀態比較。
+   - 正確地組織元件的結構，可以使應用程序更高效並且代碼更具可讀性。
