@@ -1450,3 +1450,71 @@ React Hooks 有一些規則和限制，必須遵守以確保應用程序正確�
 - 使用**箭頭函數**來定義事件處理器，以確保函數只在事件發生時被調用。
 - 建議將事件處理函數提取到 JSX 外部，這樣代碼更清晰易讀。
 - 當需要處理多個操作時，可以使用大括號定義複合的事件處理器。
+
+## Function that Returns a Function
+### A Function that Returns a Function - 筆記
+
+1. **基本概念**：
+   - 在 React 中，我們可以使用一個返回函數的函數來定義事件處理器。這種模式能讓事件處理器更加靈活，允許自定義邏輯。
+
+2. **基本例子**：
+   - 下面的例子展示了一個函數 `hello`，該函數返回一個處理器函數，點擊按鈕後會執行打印訊息：
+     ```javascript
+     const hello = () => {
+       const handler = () => console.log('hello world');
+       return handler;
+     }
+     <button onClick={hello()}>button</button>
+     ```
+   - 當元件渲染時，`hello()` 被調用，返回的處理器函數被賦值給 `onClick`，因此點擊按鈕時會觸發該處理器函數。
+
+3. **傳遞參數的例子**：
+   - 我們可以擴展 `hello` 函數，接受參數來創建個性化的事件處理器。例如，傳遞 `who` 參數來自定義打印內容：
+     ```javascript
+     const hello = (who) => () => {
+       console.log('hello', who);
+     }
+
+     <button onClick={hello('world')}>button</button>
+     <button onClick={hello('react')}>button</button>
+     <button onClick={hello('function')}>button</button>
+     ```
+   - 每個按鈕的處理器會根據不同的參數生成對應的個性化函數。
+
+4. **進一步優化**：
+   - 可以簡化函數，直接返回箭頭函數而不需要中間變數：
+     ```javascript
+     const hello = (who) => () => {
+       console.log('hello', who);
+     }
+     ```
+
+5. **應用於狀態更新**：
+   - 我們可以使用這個技巧來生成一個更新狀態的事件處理器。以下例子展示了如何創建按鈕，用於設定不同的狀態值：
+     ```javascript
+     const setToValue = (newValue) => () => {
+       console.log('value now', newValue);
+       setValue(newValue);
+     }
+
+     <button onClick={setToValue(1000)}>thousand</button>
+     <button onClick={setToValue(0)}>reset</button>
+     <button onClick={setToValue(value + 1)}>increment</button>
+     ```
+   - 這裡，`setToValue` 生成一個返回函數的函數，該函數負責更新狀態值。
+
+6. **不用返回函數的替代方法**：
+   - 我們也可以選擇直接在 `onClick` 中定義事件處理函數，而不使用函數返回函數的模式：
+     ```javascript
+     <button onClick={() => setToValue(1000)}>thousand</button>
+     <button onClick={() => setToValue(0)}>reset</button>
+     <button onClick={() => setToValue(value + 1)}>increment</button>
+     ```
+
+7. **選擇使用方式**：
+   - 在決定使用返回函數的模式還是直接在 `onClick` 中定義函數時，這主要是一個風格選擇問題。兩種方法都能實現相同的功能。
+
+### 總結：
+- **函數返回函數**是創建靈活的、可自定義的事件處理器的一種強大模式。
+- 該模式允許你通過參數來自定義事件處理邏輯，特別是當處理器需要不同參數時。
+- 可以選擇使用返回函數的方式或直接在 `onClick` 中定義事件處理器，這取決於個人編碼習慣。
