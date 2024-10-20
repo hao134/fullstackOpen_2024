@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Statistics from "./Statistics";
+import './App.css'
 
 const Button = (props) => (
   <button onClick={props.handleClick}>{props.text}</button>

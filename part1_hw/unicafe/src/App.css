@@ -1,0 +1,40 @@
+/* 統一表格樣式，修正位移問題 */
+table {
+    border-collapse: collapse; /* 消除表格的邊框間距 */
+    width: 100%; /* 表格寬度佔滿容器 */
+    max-width: 300px; /* 最大寬度為300px */
+    margin: 20px 0; /* 表格的上下間距 */
+  }
+  
+  /* 表格邊框設置 */
+  table, th, td {
+    border: 1px solid black; /* 表格邊框線條 */
+  }
+  
+  /* 表格單元格內部樣式 */
+  th, td {
+    padding: 10px; /* 單元格內部填充 */
+    text-align: left; /* 左對齊 */
+  }
+  
+  /* 表格內文字統一大小 */
+  td {
+    font-size: 16px; /* 統一字體大小 */
+    width: 50%; /* 單元格寬度 */
+  }
+  
+  /* 統一按鈕樣式 */
+  button {
+    padding: 10px 15px; /* 按鈕內部填充 */
+    margin-right: 5px; /* 按鈕間距 */
+    font-size: 16px; /* 按鈕字體大小 */
+    border: 1px solid black; /* 邊框線條 */
+    background-color: #f0f0f0; /* 背景顏色 */
+    cursor: pointer; /* 鼠標樣式 */
+  }
+  
+  /* 按鈕 hover 效果 */
+  button:hover {
+    background-color: #ddd; /* 懸停時的背景顏色 */
+  }
+  
