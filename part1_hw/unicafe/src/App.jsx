@@ -1,10 +1,5 @@
 import { useState } from "react";
-
-const Display = (props) => (
-  <div>
-    {props.text} {props.value}
-  </div>
-);
+import Statistics from "./Statistics";
 
 const Button = (props) => (
   <button onClick={props.handleClick}>{props.text}</button>
@@ -42,19 +37,12 @@ const App = () => {
       <Button handleClick={handleGoodClick} text="good" />
       <Button handleClick={handleNeutralClick} text="neutral" />
       <Button handleClick={handleBadClick} text="bad" />
-      <h1>statistics</h1>
-      <Display text="good" value={good} />
-      <Display text="neutral" value={neutral} />
-      <Display text="bad" value={bad} />
-      <Display text="all" value={all} />
-      <Display
-        text="average"
-        value={all > 0 ? (score / all).toFixed(2) : 0}
-      />{" "}
-      {/* if else to fixed nan problem */}
-      <Display
-        text="positive"
-        value={all > 0 ? ((good / all) * 100).toFixed(2) + " %" : "0 %"}
+      <Statistics
+        good={good}
+        neutral={neutral}
+        bad={bad}
+        all={all}
+        score={score}
       />
     </div>
   );
