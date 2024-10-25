@@ -79,3 +79,57 @@
 
 3. **為什麼 `key` 很重要：**
    - `key` 用來識別每個列表項目，使 React 在重繪列表時能夠優化渲染，特別是當列表項目動態增減或順序改變時，`key` 能幫助 React 跟蹤變化。
+
+## Map
+### Map 筆記
+
+**基本概念：**
+- `map` 是 JavaScript 陣列的方法，會將原陣列的每個元素映射到新的元素，並回傳一個新的陣列。
+- 在 React 開發中，`map` 被廣泛用來將資料陣列轉換成 JSX 元素陣列，使得動態生成內容變得簡單。
+
+**應用範例：**
+1. **基本使用方法：**
+   假設有一個名為 `notes` 的陣列，每個物件包含 `id`、`content` 及 `important` 屬性。
+   ```javascript
+   const notes = [
+     { id: 1, content: 'HTML is easy', important: true },
+     { id: 2, content: 'Browser can execute only JavaScript', important: false },
+     { id: 3, content: 'GET and POST are the most important methods of HTTP protocol', important: true }
+   ]
+   ```
+   
+2. **提取特定屬性：**
+   使用 `map` 提取 `notes` 中每個物件的 `id`：
+   ```javascript
+   const result = notes.map(note => note.id);
+   console.log(result);  // 結果：[1, 2, 3]
+   ```
+   - `map` 的參數是一個函數（這裡是一個箭頭函數），該函數接收每個 `note` 物件並回傳它的 `id`。
+
+3. **箭頭函數的簡寫與完整寫法：**
+   簡寫形式：
+   ```javascript
+   note => note.id
+   ```
+   完整形式：
+   ```javascript
+   (note) => {
+     return note.id;
+   }
+   ```
+
+4. **生成含內容的陣列：**
+   如果將 `map` 函數改為 `note => note.content`，則會取得包含 `content` 值的陣列。
+   
+5. **生成 React 元素：**
+   - 利用 `map` 將 `notes` 中的每個 `note` 物件轉換為含 `li` 標籤的 JSX 元素：
+     ```javascript
+     notes.map(note =>
+       <li key={note.id}>{note.content}</li>
+     )
+     ```
+   - 每個 `note` 會被轉換成帶有 `key` 屬性的 `<li>` 元素。
+   - 因為 `map` 函數內的函數參數是用來生成視圖元素，必須將 JSX 元素放在大括號內，以便正確渲染。
+
+**注意事項：**
+- **大括號**：在 React 中，將 `map` 生成的 JSX 元素放入大括號 `{}` 中是必要的，否則會報錯。
