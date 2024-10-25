@@ -174,3 +174,89 @@
 
 **結論：**
 雖然使用陣列索引作為 `key` 可以快速解決控制台的錯誤，但在長期和複雜應用中會帶來潛在問題。因此，應盡量避免使用索引作為 `key`，而是使用唯一且穩定的 `id`。
+
+## Refactoring Modules
+### Refactoring Modules 簡單筆記
+
+#### 1. **直接使用解構賦值**
+   - 為了更清晰地取得 `notes`，可以直接用解構賦值。
+   - **範例：**
+     ```javascript
+     const App = ({ notes }) => {
+       return (
+         <div>
+           <h1>Notes</h1>
+           <ul>
+             {notes.map(note => 
+               <li key={note.id}>
+                 {note.content}
+               </li>
+             )}
+           </ul>
+         </div>
+       )
+     }
+     ```
+
+#### 2. **分離單一筆記為獨立組件**
+   - 建立 `Note` 組件來顯示單一筆記的內容，使程式碼更具可讀性和模組化。
+   - **範例：**
+     ```javascript
+     const Note = ({ note }) => {
+       return (
+         <li>{note.content}</li>
+       )
+     }
+
+     const App = ({ notes }) => {
+       return (
+         <div>
+           <h1>Notes</h1>
+           <ul>
+             {notes.map(note => 
+               <Note key={note.id} note={note} />
+             )}
+           </ul>
+         </div>
+       )
+     }
+     ```
+   - 注意：`key` 屬性現在應該被放在 `Note` 組件，而不是 `li` 標籤上。
+
+#### 3. **使用模組化與單獨檔案**
+   - 大型應用程式不會將所有組件寫在同一文件中，通常將每個組件放在獨立文件中，並使用 ES6 模組化。
+   - 常見做法是將組件放在 `src` 目錄中的 `components` 資料夾中，並以組件名稱命名檔案。
+   - **範例：**
+     - **Note.jsx** (components 資料夾下)
+       ```javascript
+       const Note = ({ note }) => {
+         return (
+           <li>{note.content}</li>
+         )
+       }
+
+       export default Note
+       ```
+
+     - **App.jsx** (匯入 `Note` 組件)
+       ```javascript
+       import Note from './components/Note'
+
+       const App = ({ notes }) => {
+         return (
+           <div>
+             <h1>Notes</h1>
+             <ul>
+               {notes.map(note => 
+                 <Note key={note.id} note={note} />
+               )}
+             </ul>
+           </div>
+         )
+       }
+       ```
+
+   - 匯入自定義組件時，路徑必須相對於匯入檔案；`.jsx` 檔案副檔名可省略。
+
+#### 4. **模組化的優點**
+   - 模組化不僅讓組件可分離到不同檔案中，還便於維護和重複使用。在更大規模的應用程式中更顯實用，後續課程中會進一步探索模組的用途。
