@@ -3,7 +3,9 @@ const Part = ({ part }) => {
   const { name, exercises } = part;
   return (
     <div>
-      <p> {name} {exercises}</p>
+      <p>
+        {name} {exercises}
+      </p>
     </div>
   );
 };
@@ -15,7 +17,10 @@ const Course = ({ course }) => {
       {course.parts.map((part) => (
         <Part key={part.id} part={part} />
       ))}
-      <strong>Number of exercises {course.parts[0].exercises + course.parts[1].exercises + course.parts[2].exercises}</strong>
+      <strong>
+        Number of exercises{" "}
+        {course.parts.reduce((sum, part) => sum + part.exercises, 0)}
+      </strong>
     </div>
   );
 };
