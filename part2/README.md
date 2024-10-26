@@ -260,3 +260,64 @@
 
 #### 4. **模組化的優點**
    - 模組化不僅讓組件可分離到不同檔案中，還便於維護和重複使用。在更大規模的應用程式中更顯實用，後續課程中會進一步探索模組的用途。
+
+## When the Application Breaks
+### When the Application Breaks 簡單筆記
+
+#### 1. **應用程式崩潰時的情況**
+   - 在使用 JavaScript 等動態型別語言時，應用程式崩潰的情況可能更為頻繁，因為編譯器無法檢查資料型別的正確性。
+
+#### 2. **處理崩潰的最佳工具：`console.log`**
+   - 當應用程式崩潰時，最有效的除錯工具之一就是 `console.log`。
+   - 透過在應用程式的不同位置添加 `console.log`，可以逐步檢查應用程式的工作狀態，找出錯誤的來源。
+
+#### 3. **逐步調查錯誤**
+   - **範例**：假設應用程式因 `Course` 組件而崩潰，我們可以從 `App` 組件開始加上 `console.log`，檢查應用程式的初始化是否正常：
+     ```javascript
+     const App = () => {
+       const course = { /*...*/ }
+       console.log('App works...')
+       return (
+         <div>
+           <Course course={course} />
+         </div>
+       )
+     }
+     ```
+   - 檢查 `console` 來確認訊息的輸出，這樣可以確認應用程式的某些部分是正常工作的。
+
+#### 4. **更改組件格式以便於調試**
+   - 如果組件以單行箭頭函式聲明，會使加入 `console.log` 更困難，建議更改為完整函式格式以便於除錯。
+   - **範例**：修改 `Course` 組件為多行格式，加入 `console.log` 以檢查 `course` 變數。
+     ```javascript
+     const Course = ({ course }) => { 
+       console.log(course)
+       return (
+         <div>
+           <Header course={course} />
+         </div>
+       )
+     }
+     ```
+
+#### 5. **檢查 `props` 型別與名稱**
+   - 很多時候錯誤來源是 `props` 的型別或名稱與預期不符，這會導致解構賦值失敗。
+   - 嘗試移除解構賦值，直接檢查 `props` 內容以進一步定位問題。
+   - **範例**：
+     ```javascript
+     const Course = (props) => {
+       console.log(props)
+       const { course } = props
+       return (
+         <div>
+           <Header course={course} />
+         </div>
+       )
+     }
+     ```
+
+#### 6. **繼續逐步添加 `console.log` 直到找到錯誤**
+   - 若問題仍未解決，繼續在程式碼的不同位置添加 `console.log`，逐步找到錯誤來源。
+
+#### 7. **使用 `console.log` 調試的實際經驗**
+   - 本節內容源自真實經驗：在開發中遇到錯誤的 `props` 型別導致應用程式崩潰，透過 `console.log` 成功定位問題並解決。
