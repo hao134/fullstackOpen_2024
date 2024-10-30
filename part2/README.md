@@ -1,5 +1,5 @@
 [課程](https://fullstackopen.com/en/part2/rendering_a_collection_modules)
-# Rendering a collection, modules
+# a. Rendering a collection, modules
 ## console.log
 ### Console.log 筆記
 
@@ -321,3 +321,144 @@
 
 #### 7. **使用 `console.log` 調試的實際經驗**
    - 本節內容源自真實經驗：在開發中遇到錯誤的 `props` 型別導致應用程式崩潰，透過 `console.log` 成功定位問題並解決。
+
+# b. Forms
+## Saving the notes in the component state
+
+### note : Saving the notes in the component state
+
+#### 1. 初始化 Component State
+為了在新增筆記時更新頁面，我們可以將筆記存儲到 `App` component 的 state 中，而不是單純依賴 props 傳入的初始值。這樣可以讓 React 根據 state 變化來重新渲染頁面。使用 `useState` 來初始化筆記的狀態。
+
+```javascript
+import { useState } from 'react';
+import Note from './components/Note';
+
+const App = (props) => {
+  const [notes, setNotes] = useState(props.notes);
+
+  return (
+    <div>
+      <h1>Notes</h1>
+      <ul>
+        {notes.map(note => <Note key={note.id} note={note} />)}
+      </ul>
+    </div>
+  );
+};
+
+export default App;
+```
+
+#### 2. 使用 React Developer Tools
+`useState` 初始化的 `notes` 是通過 `props.notes` 傳入的初始值。我們可以通過使用 React Developer Tools 來驗證 `notes` 確實被正確地存儲到 state 中。
+
+#### 3. 將初始值設為空陣列
+如果想要讓筆記從空列表開始，可以將 `useState` 的初始值設為空陣列 `[]`，並省略 `props`，如下所示：
+
+```javascript
+const App = () => {
+  const [notes, setNotes] = useState([]);
+};
+```
+
+#### 4. 新增筆記的 HTML 表單
+接著，我們可以添加一個 HTML 表單，讓使用者可以輸入並保存新筆記。
+
+```javascript
+const App = (props) => {
+  const [notes, setNotes] = useState(props.notes);
+
+  const addNote = (event) => {
+    event.preventDefault();
+    console.log('button clicked', event.target);
+  };
+
+  return (
+    <div>
+      <h1>Notes</h1>
+      <ul>
+        {notes.map(note => <Note key={note.id} note={note} />)}
+      </ul>
+      <form onSubmit={addNote}>
+        <input />
+        <button type="submit">save</button>
+      </form>   
+    </div>
+  );
+};
+```
+
+#### 5. 添加事件處理程序
+`addNote` 函數是一個事件處理程序，用於處理表單提交事件。我們通過 `onSubmit` 將 `addNote` 函數連接到表單，當表單提交時觸發此函數。
+
+```javascript
+const addNote = (event) => {
+  event.preventDefault(); // 阻止表單提交的默認行為
+  console.log('button clicked', event.target); // 查看事件的目標
+};
+```
+
+在事件處理程序中，我們使用 `event.preventDefault()` 來防止表單的默認行為，即防止頁面刷新，並在控制台記錄 `event.target`，該目標即是觸發此事件的表單。
+
+#### 總結
+* 使用 `useState` 將筆記存儲在 `App` 組件的 state 中，以便新增筆記時更新頁面。
+* 使用 `addNote` 處理表單提交事件，並用 `event.preventDefault()` 防止頁面重新載入。
+* 透過 `console.log` 驗證事件的目標。
+
+
+## Controlled Components
+### 筆記：Controlled Components
+
+#### 1. Controlled Components 和 `newNote` State
+在 React 中，Controlled Component 是指其值由 component state 控制的元素，例如 `input` 元素。首先，我們可以為使用者輸入的筆記新增一個 `newNote` 的 state，用來儲存 `input` 元素的值。
+
+```javascript
+const [newNote, setNewNote] = useState('a new note...');
+```
+
+接著，我們將這個 `newNote` 狀態作為 `input` 元素的 `value`，初始值是 `"a new note..."`。
+
+#### 2. 為 `input` 註冊 `onChange` 事件處理
+此時 `input` 元素的值已經受 `newNote` 控制，但無法編輯。我們需要為 `input` 註冊一個 `onChange` 事件處理，來同步輸入的變更。
+
+```javascript
+const handleNoteChange = (event) => {
+  console.log(event.target.value);
+  setNewNote(event.target.value);
+};
+```
+
+#### 3. 將 `input` 元素設為 Controlled Component
+在 JSX 中將 `value` 和 `onChange` 設為 `newNote` 和 `handleNoteChange`，讓每次改變輸入內容時都能即時更新 `newNote` 的值。
+
+```jsx
+<input
+  value={newNote}
+  onChange={handleNoteChange}
+/>
+```
+
+#### 4. 新增筆記的邏輯 `addNote`
+為 `addNote` 增加邏輯，當表單提交時生成新的筆記物件並加入筆記列表：
+
+```javascript
+const addNote = (event) => {
+  event.preventDefault();
+  const noteObject = {
+    content: newNote,
+    important: Math.random() < 0.5,
+    id: String(notes.length + 1),
+  };
+
+  setNotes(notes.concat(noteObject)); // 不直接修改 `notes`，而是創建新陣列
+  setNewNote(''); // 清空 `input` 的值
+};
+```
+
+#### 5. 更新 State 和清空 `input`
+- 新的筆記物件 `noteObject` 使用 `newNote` 的值來填入 `content`。
+- 使用 `concat` 方法來建立 `notes` 的副本，加入新的筆記，並更新 `notes` 狀態。
+- 調用 `setNewNote('')` 來重置 `input` 的值，清空輸入框。
+
+這樣的設計將 `input` 元素變成 Controlled Component，使其狀態受到 `App` component 的控制，並確保每次新增筆記後可以動態地更新頁面而不影響原始的 `notes` 陣列。
