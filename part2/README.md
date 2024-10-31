@@ -462,3 +462,51 @@ const addNote = (event) => {
 - 調用 `setNewNote('')` 來重置 `input` 的值，清空輸入框。
 
 這樣的設計將 `input` 元素變成 Controlled Component，使其狀態受到 `App` component 的控制，並確保每次新增筆記後可以動態地更新頁面而不影響原始的 `notes` 陣列。
+
+
+## Filtering Displayed Elements
+### 筆記：Filtering Displayed Elements
+
+#### 1. 新增 `showAll` State
+為了控制應顯示的筆記（全部或僅限重要的），我們可以新增一個 state 變數 `showAll` 來追蹤顯示狀態：
+
+```javascript
+const [showAll, setShowAll] = useState(true);
+```
+
+#### 2. 使用 `notesToShow` 變數篩選筆記
+`notesToShow` 是一個依據 `showAll` 狀態篩選筆記的變數：
+
+```javascript
+const notesToShow = showAll ? notes : notes.filter(note => note.important);
+```
+
+如果 `showAll` 是 `true`，則顯示所有筆記；如果是 `false`，則僅顯示重要的筆記。這樣的篩選運用了 JavaScript 的 `filter` 方法。
+
+#### 3. 條件運算符的使用
+`notesToShow` 的賦值使用了條件運算符（`? :`），該運算符在條件成立時返回一個值，否則返回另一個值。
+
+```javascript
+const notesToShow = showAll ? notes : notes.filter(note => note.important);
+```
+
+#### 4. 篩選條件的簡化
+`filter` 方法中的 `note => note.important` 已經是簡化後的寫法，去掉了多餘的 `=== true`：
+
+```javascript
+notes.filter(note => note.important);
+```
+
+#### 5. 新增切換顯示的按鈕
+接著，我們可以加入按鈕來切換顯示模式，並直接在按鈕中定義事件處理器：
+
+```jsx
+<button onClick={() => setShowAll(!showAll)}>
+  show {showAll ? 'important' : 'all'}
+</button>
+```
+
+- `onClick` 中的 `setShowAll(!showAll)` 切換 `showAll` 的值，`true` 變 `false`，`false` 變 `true`。
+- 按鈕的文字會根據 `showAll` 的值動態改變，若目前顯示全部筆記，按鈕顯示「顯示重要筆記」，反之亦然。
+
+這樣的設計讓使用者可以點擊按鈕輕鬆切換顯示模式，而不必刷新頁面。
