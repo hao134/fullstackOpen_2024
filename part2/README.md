@@ -848,3 +848,98 @@ useEffect(() => {
 
 5. **本地端運行環境**：目前開發的所有部分都在開發者的本地機器（localhost）上運行。當應用程式部屬到網路上時，這個情況就會有所改變。我們將在課程的第 3 部分討論如何將應用程式部屬到網際網路。
 ![截圖 2024-11-03 下午4.10.10](https://hackmd.io/_uploads/ry6kx2VWyg.jpg)
+
+# d. Altering data in server
+## REST
+### 2-d章節：修改伺服器上的資料（Altering data in server）
+
+#### 簡介
+在應用程式中建立筆記時，我們會希望將它們存儲到後端伺服器中。`json-server` 套件宣稱提供了所謂的 REST 或 RESTful API，並允許快速創建一個完整的假 REST API，無需編碼。
+
+儘管 `json-server` 不完全符合教科書中對 REST API 的定義，但大多數聲稱是 RESTful 的 API 也大同小異。我們將在課程後續部分更深入了解 REST 的概念，但在這裡有必要先了解一些 `json-server` 和 REST API 的基本約定，尤其是路由（URL）和 HTTP 請求類型的使用方式。
+
+#### REST 的基本概念
+- **資源（Resource）**：在 REST 中，單個資料物件（例如應用程式中的筆記）稱為資源，每個資源都有一個唯一的地址（URL）。
+- **資源的路徑**：例如，筆記資源的路徑 `notes/3` 對應到 id 為 3 的筆記，`notes` 則對應包含所有筆記的集合。
+
+#### HTTP 請求方法
+- **HTTP GET**：用於從伺服器獲取資源。
+  - `GET notes/3`：從伺服器取得 id 為 3 的筆記。
+  - `GET notes`：取得所有筆記的清單。
+
+- **HTTP POST**：用於創建新資源，將筆記儲存到伺服器中。
+  - 將新筆記的資料作為請求的主體，並發送至 `notes` URL 來創建新筆記。
+
+#### JSON 資料格式
+- **JSON 格式要求**：`json-server` 要求所有資料以 JSON 格式傳送，即資料必須是正確格式的字串，且請求中需包含 `Content-Type` 標頭，其值為 `application/json`。
+
+這些約定構成了我們在使用 REST API 時的基本規範，並有助於理解如何與伺服器上的資源進行互動。
+
+
+## Sending Data to the Server
+### 傳送資料至伺服器 (Sending Data to the Server)
+
+在這一小節中，我們將學習如何將新筆記的數據發送到伺服器。
+
+#### 1. 修改新增筆記的事件處理函數
+首先，更新 `addNote` 函數，使其使用 `axios` 的 `post` 方法將新筆記發送到伺服器：
+
+```javascript
+addNote = event => {
+  event.preventDefault()
+  const noteObject = {
+    content: newNote,
+    important: Math.random() < 0.5,
+  }
+
+  axios
+    .post('http://localhost:3001/notes', noteObject)
+    .then(response => {
+      console.log(response)
+    })
+}
+```
+
+- `noteObject`：建立一個新的筆記物件，不包含 `id` 屬性，因為我們希望由伺服器來生成資源的 `id`。
+- `axios.post`：將 `noteObject` 發送到 `http://localhost:3001/notes`，並在伺服器回應後，將回應數據記錄到控制台中。
+
+#### 2. 確認伺服器回應
+新增筆記後，控制台會顯示伺服器的回應內容，其中包含伺服器生成的 `id`，這代表筆記已成功儲存在伺服器。
+
+#### 3. 檢查網路請求
+在 Chrome 的開發者工具中，可以查看發送的 HTTP 請求，以確認請求標頭（headers）和數據是否正確。
+- **Headers**：確認 `Content-Type` 為 `application/json`，這表示數據格式為 JSON。
+- **Payload**：查看請求中發送的數據內容。
+- **Response**：檢查伺服器的回應數據，其中包含生成的 `id`。
+
+#### 4. 更新應用程式的狀態
+目前，新增的筆記還沒有顯示在螢幕上，因為我們尚未更新 `App` 元件的狀態。以下是修改後的 `addNote` 函數，將新筆記添加到應用程式的狀態中：
+
+```javascript
+addNote = event => {
+  event.preventDefault()
+  const noteObject = {
+    content: newNote,
+    important: Math.random() > 0.5,
+  }
+
+  axios
+    .post('http://localhost:3001/notes', noteObject)
+    .then(response => {
+      setNotes(notes.concat(response.data))
+      setNewNote('')
+    })
+}
+```
+
+- `setNotes`：將伺服器返回的筆記（包含 `id`）添加到 `notes` 狀態中。
+- `setNewNote('')`：清空輸入欄位。
+- `concat`：使用 `concat` 方法產生新的陣列，這樣可以保持原始狀態的不可變性（immutability），符合 React 的最佳實踐。
+
+#### 5. 異步通訊與除錯策略
+當伺服器回傳的數據影響應用行為時，會面臨一系列異步通訊的挑戰，這要求我們掌握足夠的 JavaScript 和 React 基礎來正確地調試。
+- 在開發過程中，透過控制台日誌（`console.log`）等方式來確認狀態的正確性非常重要。
+- 可以在瀏覽器中查看 `json-server` 的 JSON 資料，確認數據是否正確存儲在伺服器中。
+
+#### 6. 總結
+在課程的下一部分，我們將學習如何在後端實現自己的邏輯，並且深入了解如 **Postman** 之類的工具，這些工具有助於除錯伺服器應用程式。
