@@ -718,3 +718,133 @@ axios.get('http://localhost:3001/notes').then(response => {
 ```
 
 這種方法適合某些情況，但不夠靈活。最佳方式是將資料獲取邏輯移入 `App` 元件中，這樣可以更靈活地控制渲染流程。然而，`axios.get` 的放置位置並不明顯，因此需要進一步探討如何在 React 中最佳化使用這段非同步的資料獲取程式碼。
+
+## Effect-hooks
+### Effect Hook 詳細筆記
+
+#### 什麼是 Effect Hook
+React 16.8.0 引入了 `useState` 與 `useEffect` 這兩個 hook 來增強函式型元件的功能。`useEffect` 是一種 effect hook，讓元件能夠在與外部系統同步時（例如網路請求、DOM 操作、動畫等）執行特定的動作。`useEffect` 尤其適合用於從伺服器獲取資料。
+
+#### 整合 Effect Hook 來取得資料
+先移除 `main.jsx` 中的伺服器請求，並讓 `App` 元件自己負責抓取資料：
+
+**main.jsx**
+```javascript
+import ReactDOM from "react-dom/client";
+import App from "./App";
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+```
+
+在 `App` 元件中使用 `useEffect` 來從伺服器獲取資料：
+
+**App.jsx**
+```javascript
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+import Note from './components/Note'
+
+const App = () => {
+  const [notes, setNotes] = useState([]) // 初始值為空陣列
+  const [newNote, setNewNote] = useState('')
+  const [showAll, setShowAll] = useState(true)
+
+  useEffect(() => {
+    console.log('effect')
+    axios
+      .get('http://localhost:3001/notes')
+      .then(response => {
+        console.log('promise fulfilled')
+        setNotes(response.data)
+      })
+  }, []) // 第二參數為空陣列，僅執行一次
+
+  console.log('render', notes.length, 'notes')
+  // ...
+}
+```
+
+#### 效果說明
+這段程式碼的執行流程：
+1. **初次渲染**：當 `App` 元件首次被渲染時，控制台顯示 `render 0 notes`，因為此時尚未取得資料。
+2. **執行 Effect**：`useEffect` 開始執行，`console.log('effect')` 顯示在控制台。
+3. **發送請求**：`axios.get` 開始從 `http://localhost:3001/notes` 取得資料，並註冊一個事件處理器。
+4. **處理伺服器回應**：當資料成功返回，`promise fulfilled` 被印出，並透過 `setNotes` 更新狀態，使 `notes` 包含伺服器的資料。
+5. **重新渲染**：更新狀態後元件重新渲染，這次的 `notes` 已包含 3 筆資料，控制台顯示 `render 3 notes`。
+
+#### `useEffect` 的兩個參數
+`useEffect` 接收兩個參數：
+1. **第一個參數**：`useEffect` 的主要執行函數，即副作用函數，會在每次渲染後自動執行。
+2. **第二個參數**：是依賴陣列，用來控制副作用的執行頻率。當它為空陣列 `[]` 時，副作用只在首次渲染時執行一次。
+
+#### 重構的寫法
+將 effect 函數定義成變數以便更清晰：
+
+```javascript
+const hook = () => {
+  console.log('effect')
+  axios
+    .get('http://localhost:3001/notes')
+    .then(response => {
+      console.log('promise fulfilled')
+      setNotes(response.data)
+    })
+}
+
+useEffect(hook, [])
+```
+
+這樣的寫法更清楚地展示了 `useEffect` 的兩個參數：`hook` 是副作用函數，`[]` 是依賴陣列。
+
+#### 彈性使用 `useEffect` 的情境
+除了伺服器請求，`useEffect` 也適用於各種需要在特定時機執行的情況，例如 DOM 操作或監聽事件。
+
+#### 另一種 `useEffect` 寫法
+也可以透過變數存儲事件處理函數，並分別存放 Promise：
+
+```javascript
+useEffect(() => {
+  console.log('effect')
+
+  const eventHandler = response => {
+    console.log('promise fulfilled')
+    setNotes(response.data)
+  }
+
+  const promise = axios.get('http://localhost:3001/notes')
+  promise.then(eventHandler)
+}, [])
+```
+
+雖然分開存放函數與 Promise 讓程式碼更細緻，但一般不需要特地用變數存儲函數或 Promise，直接鏈接呼叫會更簡潔。
+
+```javascript
+useEffect(() => {
+  console.log('effect')
+  axios
+    .get('http://localhost:3001/notes')
+    .then(response => {
+      console.log('promise fulfilled')
+      setNotes(response.data)
+    })
+}, [])
+```
+
+#### 持續問題
+目前應用程式從伺服器取得的資料可以顯示出來，但新增筆記時資料並未同步存回伺服器，因此無法持久保存資料。接下來需要處理如何在新增筆記時更新伺服器的資料。
+
+## The development runtime environment小節
+### 開發執行環境
+
+隨著整個應用程式的配置越來越複雜，我們來回顧一下每個部分發生的事情和所在位置。以下的圖解描述了應用程式的架構。
+
+1. **React 應用程式在瀏覽器中執行**：應用程式的 JavaScript 程式碼在瀏覽器中運行。瀏覽器從 React 開發伺服器獲取 JavaScript 程式碼。當你執行 `npm run dev` 指令後，會啟動這個開發伺服器。
+
+2. **React 開發伺服器（dev-server）**：開發伺服器會將 JavaScript 程式碼轉換成瀏覽器可以理解的格式。開發伺服器除了將不同檔案的 JavaScript 程式碼合併成單一檔案，還負責編譯與轉換。我們會在課程的第 7 部分詳細討論開發伺服器的運作方式。
+
+3. **資料的 JSON 格式化**：在瀏覽器中執行的 React 應用程式會向執行在本機 3001 埠口的 `json-server` 發出請求，來取得 JSON 格式化的資料。`json-server` 是開發時用來模擬伺服器的一個工具。
+
+4. **資料來源（db.json）**：`json-server` 的資料來自於本地端的 `db.json` 檔案。這個檔案在開發期間存放所有的資料。
+
+5. **本地端運行環境**：目前開發的所有部分都在開發者的本地機器（localhost）上運行。當應用程式部屬到網路上時，這個情況就會有所改變。我們將在課程的第 3 部分討論如何將應用程式部屬到網際網路。
+![截圖 2024-11-03 下午4.10.10](https://hackmd.io/_uploads/ry6kx2VWyg.jpg)
