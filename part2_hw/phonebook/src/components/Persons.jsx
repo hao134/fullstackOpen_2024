@@ -1,7 +1,7 @@
 const Persons = ({ personsToShow }) => (
   <ul>
     {personsToShow.map((person) => (
-      <li key={person.name}>
+      <li key={person.id}>
         {person.name}: {person.number}
       </li>
     ))}
