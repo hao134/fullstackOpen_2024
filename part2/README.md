@@ -943,3 +943,99 @@ addNote = event => {
 
 #### 6. 總結
 在課程的下一部分，我們將學習如何在後端實現自己的邏輯，並且深入了解如 **Postman** 之類的工具，這些工具有助於除錯伺服器應用程式。
+
+## Changing the Importance of Notes
+### 更改筆記的重要性 (Changing the Importance of Notes)
+
+我們將為每個筆記新增一個按鈕，讓使用者可以切換筆記的重要性。
+
+#### 1. 修改 Note 元件
+在 `Note` 元件中新增一個按鈕，並將 `toggleImportance` 函數設為按鈕的事件處理器：
+
+```javascript
+const Note = ({ note, toggleImportance }) => {
+  const label = note.important ? 'make not important' : 'make important'
+
+  return (
+    <li>
+      {note.content} 
+      <button onClick={toggleImportance}>{label}</button>
+    </li>
+  )
+}
+```
+
+- **按鈕標籤**：根據筆記的 `important` 屬性設定標籤為 "make not important" 或 "make important"。
+- **事件處理器**：按鈕的事件處理器 `toggleImportance` 是透過 props 傳入的函數，用來切換筆記的重要性。
+
+#### 2. 在 App 元件中定義 `toggleImportanceOf` 函數
+`App` 元件中定義了一個 `toggleImportanceOf` 事件處理函數，並將其傳遞給每個 `Note` 元件：
+
+```javascript
+const App = () => {
+  const [notes, setNotes] = useState([])
+  const [newNote, setNewNote] = useState('')
+  const [showAll, setShowAll] = useState(true)
+
+  const toggleImportanceOf = (id) => {
+    console.log(`importance of ${id} needs to be toggled`)
+  }
+
+  return (
+    <div>
+      <h1>Notes</h1>
+      <div>
+        <button onClick={() => setShowAll(!showAll)}>
+          show {showAll ? 'important' : 'all'}
+        </button>
+      </div>      
+      <ul>
+        {notesToShow.map(note => 
+          <Note
+            key={note.id}
+            note={note} 
+            toggleImportance={() => toggleImportanceOf(note.id)}
+          />
+        )}
+      </ul>
+    </div>
+  )
+}
+```
+
+- **唯一事件處理器**：每個筆記的 `toggleImportance` 事件處理器都是唯一的，因為每個 `note.id` 不同。
+- **模板字串**：可以使用模板字串更易讀地生成字串，如 `console.log(\`importance of ${id} needs to be toggled\`)`。
+
+#### 3. 使用 PUT 請求更新筆記
+每個筆記在 `json-server` 後端有唯一的 URL，我們可以透過 HTTP PUT 請求更新筆記。以下是 `toggleImportanceOf` 函數的最終形式：
+
+```javascript
+const toggleImportanceOf = id => {
+  const url = `http://localhost:3001/notes/${id}`
+  const note = notes.find(n => n.id === id)
+  const changedNote = { ...note, important: !note.important }
+
+  axios.put(url, changedNote).then(response => {
+    setNotes(notes.map(n => n.id === id ? response.data : n))
+  })
+}
+```
+
+- **設定 URL**：根據 `id` 設定筆記的唯一 URL。
+- **找到筆記**：用 `find` 方法找到指定 `id` 的筆記，並將其賦值給 `note` 變數。
+- **建立新物件**：用擴展運算符 `{ ...note, important: !note.important }` 建立一個新的 `changedNote` 物件，並將 `important` 屬性值取反。
+- **PUT 請求**：使用 `axios.put` 將 `changedNote` 發送到伺服器，替換掉原來的筆記。
+- **更新狀態**：在回應中接收到更新後的筆記，用 `setNotes` 更新 `notes` 狀態。
+
+#### 4. 為什麼使用淺拷貝？
+在 React 中，直接修改狀態中的物件是不建議的，因為這會違反 React 的不可變性原則。因此，我們使用 `{ ...note }` 來創建 `note` 的淺拷貝，以確保我們不直接修改原始的狀態物件。
+
+#### 5. 用 `map` 更新陣列中的特定項目
+```javascript
+setNotes(notes.map(n => n.id === id ? response.data : n))
+```
+
+- **`map` 方法**：`map` 會創建一個新陣列。條件為 `note.id === id` 時，使用更新的筆記（`response.data`）；否則保留舊的項目。
+- **更新邏輯**：這樣可以在不直接修改原陣列的情況下更新指定的筆記，符合 React 不變性原則。
+
+這種 `map` 方法看起來可能有點複雜，但在 React 中非常常用。
