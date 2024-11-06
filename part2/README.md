@@ -1039,3 +1039,160 @@ setNotes(notes.map(n => n.id === id ? response.data : n))
 - **更新邏輯**：這樣可以在不直接修改原陣列的情況下更新指定的筆記，符合 React 不變性原則。
 
 這種 `map` 方法看起來可能有點複雜，但在 React 中非常常用。
+
+## Extracting Communication with the Backend into a Seperate Module
+### 將與後端的通訊提取到獨立模組 (Extracting Communication with the Backend into a Separate Module)
+
+為了使 `App` 元件更簡潔並遵循單一職責原則，我們將後端通訊的部分提取到一個單獨的模組中。
+
+#### 1. 建立 `services/notes.js` 模組
+在 `src` 目錄中新增 `services` 資料夾，並在其中建立 `notes.js` 文件：
+
+```javascript
+import axios from 'axios'
+const baseUrl = 'http://localhost:3001/notes'
+
+const getAll = () => {
+  return axios.get(baseUrl)
+}
+
+const create = newObject => {
+  return axios.post(baseUrl, newObject)
+}
+
+const update = (id, newObject) => {
+  return axios.put(`${baseUrl}/${id}`, newObject)
+}
+
+export default { 
+  getAll: getAll, 
+  create: create, 
+  update: update 
+}
+```
+
+- **`getAll`**：從伺服器獲取所有筆記。
+- **`create`**：新增一個新的筆記。
+- **`update`**：更新指定 ID 的筆記。
+
+#### 2. 在 `App` 元件中使用 `notes.js` 模組
+在 `App` 元件中引入 `noteService` 模組並使用其方法：
+
+```javascript
+import noteService from './services/notes'
+
+const App = () => {
+  // 使用 useEffect 獲取初始筆記資料
+  useEffect(() => {
+    noteService
+      .getAll()
+      .then(response => {
+        setNotes(response.data)
+      })
+  }, [])
+
+  const toggleImportanceOf = id => {
+    const note = notes.find(n => n.id === id)
+    const changedNote = { ...note, important: !note.important }
+
+    noteService
+      .update(id, changedNote)
+      .then(response => {
+        setNotes(notes.map(note => note.id === id ? response.data : note))
+      })
+  }
+
+  const addNote = (event) => {
+    event.preventDefault()
+    const noteObject = {
+      content: newNote,
+      important: Math.random() > 0.5
+    }
+
+    noteService
+      .create(noteObject)
+      .then(response => {
+        setNotes(notes.concat(response.data))
+        setNewNote('')
+      })
+  }
+}
+```
+
+#### 3. 簡化 `notes.js` 返回的數據
+目前 `App` 元件需要從 `response` 中提取 `response.data`，我們可以在 `notes.js` 模組中改進，使其直接返回 `data`：
+
+```javascript
+import axios from 'axios'
+const baseUrl = 'http://localhost:3001/notes'
+
+const getAll = () => {
+  const request = axios.get(baseUrl)
+  return request.then(response => response.data)
+}
+
+const create = newObject => {
+  const request = axios.post(baseUrl, newObject)
+  return request.then(response => response.data)
+}
+
+const update = (id, newObject) => {
+  const request = axios.put(`${baseUrl}/${id}`, newObject)
+  return request.then(response => response.data)
+}
+
+export default { 
+  getAll: getAll, 
+  create: create, 
+  update: update 
+}
+```
+
+- **返回數據**：每個函數不再直接返回 `axios` 的 promise，而是透過 `then` 方法處理後僅返回 `response.data`。
+- **改進的使用方式**：使得在 `App` 中使用該模組時更為簡單，不需要手動提取 `response.data`。
+
+#### 4. 更新 `App` 元件中的使用方式
+因為 `notes.js` 模組已經更新，我們也需要在 `App` 中相應調整，以直接使用 `data`：
+
+```javascript
+const App = () => {
+  useEffect(() => {
+    noteService
+      .getAll()
+      .then(initialNotes => {
+        setNotes(initialNotes)
+      })
+  }, [])
+
+  const toggleImportanceOf = id => {
+    const note = notes.find(n => n.id === id)
+    const changedNote = { ...note, important: !note.important }
+
+    noteService
+      .update(id, changedNote)
+      .then(returnedNote => {
+        setNotes(notes.map(note => note.id === id ? returnedNote : note))
+      })
+  }
+
+  const addNote = (event) => {
+    event.preventDefault()
+    const noteObject = {
+      content: newNote,
+      important: Math.random() > 0.5
+    }
+
+    noteService
+      .create(noteObject)
+      .then(returnedNote => {
+        setNotes(notes.concat(returnedNote))
+        setNewNote('')
+      })
+  }
+}
+```
+
+- **簡化後的回調**：`getAll`、`create`、`update` 現在直接返回數據，使得回調中不再需要提取 `response.data`。
+  
+#### 5. 理解 Promises 的重要性
+由於現代 JavaScript 開發大量使用 Promises，因此花時間理解它們的運作方式是非常有幫助的。Promises 可以幫助我們管理異步操作，例如 HTTP 請求，並提供更清晰的代碼結構。
