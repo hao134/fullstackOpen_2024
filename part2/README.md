@@ -1304,3 +1304,118 @@ const person = { name, age }
 
 ### 小結
 這種簡化寫法讓代碼更簡潔，便於維護和閱讀。
+
+## Promises and Errors
+### Promises and Errors
+
+如果應用程式允許用戶刪除筆記，可能會遇到這種情況：用戶嘗試更改已從系統刪除的筆記的「重要性」。為了模擬這種情況，我們可以修改 `noteService` 的 `getAll` 函數，使其返回一個實際上並不存在於後端伺服器上的「硬編碼」筆記：
+
+```javascript
+const getAll = () => {
+  const request = axios.get(baseUrl)
+  const nonExisting = {
+    id: 10000,
+    content: 'This note is not saved to server',
+    important: true,
+  }
+  return request.then(response => response.data.concat(nonExisting))
+}
+```
+
+當我們嘗試更改這個硬編碼筆記的「重要性」時，會在控制台中看到 404 錯誤，說明伺服器找不到該資源。
+
+#### 處理錯誤情況
+
+這種情況下，應用程式應該能夠優雅地處理錯誤。否則，只有在用戶打開控制台時才能看到錯誤，並且按鈕點擊後不會改變筆記的「重要性」。
+
+### Promise 的三種狀態
+
+Promise 可以處於三種不同的狀態：
+1. **Pending**（待定）：操作尚未完成，最終值還不可用。
+2. **Fulfilled**（成功）：操作完成且返回結果，通常表示成功。
+3. **Rejected**（失敗）：操作失敗，沒有成功的最終值。
+
+當 HTTP 請求失敗時，相關的 Promise 會被拒絕（Rejected）。目前的代碼並未處理 Promise 被拒絕的情況。
+
+#### 處理 Promise 被拒絕的情況
+
+可以通過 `then` 方法的第二個回調函數來處理 Promise 被拒絕的情況，但更常見的做法是使用 `catch` 方法來處理錯誤。
+
+例如：
+
+```javascript
+axios
+  .get('http://example.com/probably_will_fail')
+  .then(response => {
+    console.log('success!')
+  })
+  .catch(error => {
+    console.log('fail')
+  })
+```
+
+如果請求失敗，`catch` 方法註冊的事件處理器會被調用。
+
+#### 使用 Promise Chain 的 `catch`
+
+當應用程式發出 HTTP 請求時，實際上會形成一個 Promise Chain（Promise 鏈）：
+
+```javascript
+axios
+  .put(`${baseUrl}/${id}`, newObject)
+  .then(response => response.data)
+  .then(changedNote => {
+    // ...
+  })
+```
+
+`catch` 方法可以放在 Promise 鏈的末尾，用來捕捉任何一個 Promise 被拒絕的錯誤：
+
+```javascript
+axios
+  .put(`${baseUrl}/${id}`, newObject)
+  .then(response => response.data)
+  .then(changedNote => {
+    // ...
+  })
+  .catch(error => {
+    console.log('fail')
+  })
+```
+
+### 在 App 組件中加入錯誤處理
+
+在 `App` 組件中，我們可以在 `toggleImportanceOf` 函數中使用 `catch` 方法來處理錯誤，並在出錯時顯示錯誤訊息：
+
+```javascript
+const toggleImportanceOf = id => {
+  const note = notes.find(n => n.id === id)
+  const changedNote = { ...note, important: !note.important }
+
+  noteService
+    .update(id, changedNote)
+    .then(returnedNote => {
+      setNotes(notes.map(note => note.id === id ? returnedNote : note))
+    })
+    .catch(error => {
+      alert(`the note '${note.content}' was already deleted from server`)
+      setNotes(notes.filter(n => n.id !== id))
+    })
+}
+```
+
+如果請求失敗，會彈出一個提示框，告知用戶該筆記已被刪除，然後使用 `filter` 方法從狀態中移除這條筆記。
+
+#### `filter` 方法的應用
+
+當從狀態中移除已刪除的筆記時，`filter` 方法會返回一個包含所有符合條件的筆記的新陣列：
+
+```javascript
+notes.filter(n => n.id !== id)
+```
+
+這樣，應用程式的狀態將被更新，不再包含已刪除的筆記。
+
+### 使用 `alert` 的注意事項
+
+雖然 `alert` 方法在這種情況下是簡單且有效的，但在更正式的 React 應用中，使用 `alert` 並不是最佳做法。我們將在後續課程中學習更高級的訊息和通知顯示方法，這樣的方式能提供更好的用戶體驗。
