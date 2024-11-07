@@ -1196,3 +1196,111 @@ const App = () => {
   
 #### 5. 理解 Promises 的重要性
 由於現代 JavaScript 開發大量使用 Promises，因此花時間理解它們的運作方式是非常有幫助的。Promises 可以幫助我們管理異步操作，例如 HTTP 請求，並提供更清晰的代碼結構。
+
+## Cleaner Syntax for Defining Object Literals
+### Object Literals 簡潔語法
+
+在 `noteService` 模組中，目前的導出物件具有 `getAll`、`create` 和 `update` 屬性，這些屬性分別指向處理筆記的相關函數。該模組的初始定義如下：
+
+```javascript
+import axios from 'axios'
+const baseUrl = 'http://localhost:3001/notes'
+
+const getAll = () => {
+  const request = axios.get(baseUrl)
+  return request.then(response => response.data)
+}
+
+const create = newObject => {
+  const request = axios.post(baseUrl, newObject)
+  return request.then(response => response.data)
+}
+
+const update = (id, newObject) => {
+  const request = axios.put(`${baseUrl}/${id}`, newObject)
+  return request.then(response => response.data)
+}
+
+export default { 
+  getAll: getAll, 
+  create: create, 
+  update: update 
+}
+```
+
+#### 導出物件的簡潔寫法
+
+目前的導出物件看起來有些繁瑣：
+
+```javascript
+{ 
+  getAll: getAll, 
+  create: create, 
+  update: update 
+}
+```
+
+在物件定義中，冒號左邊是物件的鍵，右邊是模組內部定義的變數。由於鍵和值的變數名稱相同，可以使用更簡潔的語法：
+
+```javascript
+{ 
+  getAll, 
+  create, 
+  update 
+}
+```
+
+#### 更新後的模組定義
+
+這樣一來，模組定義可以簡化為以下形式：
+
+```javascript
+import axios from 'axios'
+const baseUrl = 'http://localhost:3001/notes'
+
+const getAll = () => {
+  const request = axios.get(baseUrl)
+  return request.then(response => response.data)
+}
+
+const create = newObject => {
+  const request = axios.post(baseUrl, newObject)
+  return request.then(response => response.data)
+}
+
+const update = (id, newObject) => {
+  const request = axios.put(`${baseUrl}/${id}`, newObject)
+  return request.then(response => response.data)
+}
+
+export default { getAll, create, update }
+```
+
+### ES6 新功能：物件屬性的簡潔表示法
+
+透過 ES6 的新語法，我們可以使用更簡潔的方式來定義物件。當物件的屬性名稱和變數名稱相同時，這種語法可以節省代碼。例如：
+
+```javascript
+const name = 'Leevi'
+const age = 0
+```
+
+在舊版本的 JavaScript 中，定義物件需要這樣寫：
+
+```javascript
+const person = {
+  name: name,
+  age: age
+}
+```
+
+但在 ES6 中，如果屬性名稱和變數名稱相同，可以簡化為：
+
+```javascript
+const person = { name, age }
+```
+
+這兩種寫法的效果完全相同，最後都會生成一個具有 `name` 和 `age` 屬性的物件，分別對應值 `Leevi` 和 `0`。
+
+### 小結
+這種簡化寫法讓代碼更簡潔，便於維護和閱讀。
