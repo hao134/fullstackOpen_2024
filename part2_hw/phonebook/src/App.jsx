@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-// import axios from 'axios'
 import Filter from "./components/Filter";
 import Persons from "./components/Persons";
 import PersonForm from "./components/PersonForm";
@@ -44,13 +43,6 @@ const App = () => {
         setPersons(persons.concat(returnedPerson))
         setNewPerson({ name: "", number: "" })
       })
-
-    // axios
-    //   .post('http://localhost:3001/persons', personObject)
-    //   .then(response => {
-    //     setPersons(persons.concat(response.data));
-    //     setNewPerson({ name: "", number: "" });
-    //   })
   };
 
   const handleChange = (event) => {
@@ -61,6 +53,17 @@ const App = () => {
   const handleFilterChange = (event) => {
     setFilter(event.target.value);
   };
+
+  const handleDeletePerson = (id, name) => {
+    if (window.confirm(`Delete ${name}`)) {
+      phonebookServices
+        .remove(id)
+        .then((response) => {
+          const updatedPersons = persons.filter((person) => person.id !== id)
+          setPersons(updatedPersons)
+        })
+    }
+  }
 
   const personsToShow = persons.filter((person) =>
     person.name.toLowerCase().includes(filter.toLowerCase())
@@ -76,7 +79,7 @@ const App = () => {
         handleChange={handleChange}
       />
       <h2>Numbers</h2>
-      <Persons personsToShow={personsToShow} />
+      <Persons personsToShow={personsToShow} handleDeletePerson = {handleDeletePerson}/>
     </div>
   );
 };
