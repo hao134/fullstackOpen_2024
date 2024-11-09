@@ -32,9 +32,18 @@ const App = () => {
       setNewPerson({ name: "", number: "" });
       return;
     }
+    const personObject = {
+      name: newPerson.name,
+      number: newPerson.number,
+      id: newPerson.name
+    };
 
-    setPersons(persons.concat(newPerson));
-    setNewPerson({ name: "", number: "" });
+    axios
+      .post('http://localhost:3001/persons', personObject)
+      .then(response => {
+        setPersons(persons.concat(response.data));
+        setNewPerson({ name: "", number: "" });
+      })
   };
 
   const handleChange = (event) => {
