@@ -22,15 +22,47 @@ const App = () => {
   const handleAddPerson = (event) => {
     event.preventDefault();
 
-    if (
-      persons.find(
-        (person) => person.name.toLowerCase() === newPerson.name.toLowerCase()
+    //找到是否有相同名字的用戶
+    const existingPerson = persons.find(
+      (person) => person.name.toLowerCase() === newPerson.name.toLowerCase() 
+    );
+
+    //如果已經存在相同名字的用戶
+    if (existingPerson) {
+      const confirmUpdate = window.confirm(
+        `${newPerson.name} is already added to phonebook, replace the old number with a new one?`
       )
-    ) {
-      alert(`${newPerson.name} is already added to phonebook`);
-      setNewPerson({ name: "", number: "" });
-      return;
+
+      if (confirmUpdate) {
+        // 使用PUT請求更新電話號碼
+        const updatedPerson = { ...existingPerson, number: newPerson.number }
+        phonebookServices
+          .update(existingPerson.id, updatedPerson)
+          .then((returnedPerson) => {
+            setPersons(
+              persons.map((person) =>
+                person.id !== existingPerson.id ? person : returnedPerson
+              )
+            );
+            setNewPerson({ name: "", number: "" });
+          })
+          .catch(error => {
+            alert(`Information of ${existingPerson.name} has already been removed from server`)
+            setPersons(persons.filter(person=> person.id !== existingPerson.id))
+          })
+      }
+      return
     }
+
+    // if (
+    //   persons.find(
+    //     (person) => person.name.toLowerCase() === newPerson.name.toLowerCase()
+    //   )
+    // ) {
+    //   alert(`${newPerson.name} is already added to phonebook`);
+    //   setNewPerson({ name: "", number: "" });
+    //   return;
+    // }
     const personObject = {
       name: newPerson.name,
       number: newPerson.number,
