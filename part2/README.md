@@ -1419,3 +1419,126 @@ notes.filter(n => n.id !== id)
 ### 使用 `alert` 的注意事項
 
 雖然 `alert` 方法在這種情況下是簡單且有效的，但在更正式的 React 應用中，使用 `alert` 並不是最佳做法。我們將在後續課程中學習更高級的訊息和通知顯示方法，這樣的方式能提供更好的用戶體驗。
+
+# e. Adding styles to React app
+### Improved Error Message
+
+在這一節中，我們將改善 React 應用程式中的錯誤訊息顯示，並將其轉換為專門的 React 元件，而非僅僅使用 `alert`。這樣能讓錯誤訊息的外觀和管理更加一致。
+
+---
+
+#### 1. 建立錯誤訊息元件
+
+首先，我們建立一個 `Notification` 元件，用來顯示錯誤訊息。這個元件會根據傳入的 `message` prop 來判斷是否顯示訊息：
+
+```javascript
+const Notification = ({ message }) => {
+  if (message === null) {
+    return null
+  }
+
+  return (
+    <div className='error'>
+      {message}
+    </div>
+  )
+}
+```
+
+- 當 `message` 為 `null` 時，元件返回 `null`，不渲染任何內容。
+- 否則，訊息會被顯示在一個帶有 `error` class 的 `div` 元素內。
+
+---
+
+#### 2. 將錯誤訊息的狀態加入 App 元件
+
+接著，在 `App` 元件中新增一個 `errorMessage` 的 state，用於存儲錯誤訊息。
+
+```javascript
+const App = () => {
+  const [notes, setNotes] = useState([]) 
+  const [newNote, setNewNote] = useState('')
+  const [showAll, setShowAll] = useState(true)
+  const [errorMessage, setErrorMessage] = useState('some error happened...') // 初始化為測試訊息
+
+  return (
+    <div>
+      <h1>Notes</h1>
+      <Notification message={errorMessage} /> {/* 顯示錯誤訊息 */}
+      <div>
+        <button onClick={() => setShowAll(!showAll)}>
+          show {showAll ? 'important' : 'all' }
+        </button>
+      </div>
+      {/* ...其他內容... */}
+    </div>
+  )
+}
+```
+
+- `errorMessage` 的初始值設為某個測試訊息，以便立即看到效果。
+- `Notification` 元件接收 `errorMessage` 作為 `message` prop，當 `errorMessage` 有值時顯示訊息。
+
+---
+
+#### 3. 增加錯誤訊息的樣式
+
+在 `index.css` 中加入 `error` 類的樣式，使錯誤訊息更醒目。
+
+```css
+.error {
+  color: red;
+  background: lightgrey;
+  font-size: 20px;
+  border-style: solid;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+```
+
+這樣的樣式讓錯誤訊息文字顯示為紅色、背景淺灰色，並加上了邊框與圓角，讓錯誤訊息更顯眼。
+
+---
+
+#### 4. 更新錯誤訊息的邏輯
+
+在 `toggleImportanceOf` 函數中，我們加入錯誤訊息的邏輯：
+
+```javascript
+const toggleImportanceOf = id => {
+  const note = notes.find(n => n.id === id)
+  const changedNote = { ...note, important: !note.important }
+
+  noteService
+    .update(id, changedNote)
+    .then(returnedNote => {
+      setNotes(notes.map(note => note.id !== id ? note : returnedNote))
+    })
+    .catch(error => {
+      setErrorMessage(
+        `Note '${note.content}' was already removed from server`
+      )
+      setTimeout(() => {
+        setErrorMessage(null)
+      }, 5000)
+      setNotes(notes.filter(n => n.id !== id))
+    })
+}
+```
+
+- 當 `catch` 捕捉到錯誤（如伺服器上該筆記事已被刪除）時，將錯誤訊息設定為 `errorMessage` 的新值。
+- 使用 `setTimeout`，在五秒後將 `errorMessage` 重設為 `null`，自動隱藏錯誤訊息。
+- 另外，刪除應用程式中不存在於伺服器的該筆記事，以保持狀態同步。
+
+---
+
+### 總結
+
+透過上述步驟，我們：
+
+1. **建立了 Notification 元件**來顯示錯誤訊息。
+2. **新增了錯誤訊息的樣式**，使其更醒目。
+3. **在程式中處理錯誤**，以更友善的方式通知使用者，並自動隱藏錯誤訊息。
+
+這樣的設計使得應用程式的錯誤處理更加優雅且易於擴展。在日後開發中可以考慮加入更多樣的訊息顯示方式。
