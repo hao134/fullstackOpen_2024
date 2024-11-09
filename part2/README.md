@@ -1421,7 +1421,8 @@ notes.filter(n => n.id !== id)
 雖然 `alert` 方法在這種情況下是簡單且有效的，但在更正式的 React 應用中，使用 `alert` 並不是最佳做法。我們將在後續課程中學習更高級的訊息和通知顯示方法，這樣的方式能提供更好的用戶體驗。
 
 # e. Adding styles to React app
-### Improved Error Message
+## Improved Error Message
+### Improved Error Message note
 
 在這一節中，我們將改善 React 應用程式中的錯誤訊息顯示，並將其轉換為專門的 React 元件，而非僅僅使用 `alert`。這樣能讓錯誤訊息的外觀和管理更加一致。
 
@@ -1542,3 +1543,94 @@ const toggleImportanceOf = id => {
 3. **在程式中處理錯誤**，以更友善的方式通知使用者，並自動隱藏錯誤訊息。
 
 這樣的設計使得應用程式的錯誤處理更加優雅且易於擴展。在日後開發中可以考慮加入更多樣的訊息顯示方式。
+
+## Inline styles
+### Inline Styles
+
+在 React 中，我們可以使用內嵌（inline）樣式直接在程式碼中撰寫 CSS，透過 `style` 屬性為元素或元件提供一組 CSS 設定。
+
+---
+
+#### 1. 定義內嵌樣式的基本概念
+
+內嵌樣式的概念非常簡單。每個 React 元件或元素都可以透過 `style` 屬性，接收一個以 JavaScript 物件形式定義的 CSS 設定。不同於一般 CSS 文件的寫法，在 JavaScript 中的 CSS 規則稍有不同，例如：
+
+CSS 樣式：
+```css
+{
+  color: green;
+  font-style: italic;
+  font-size: 16px;
+}
+```
+
+在 React 內嵌樣式中會寫成：
+```javascript
+{
+  color: 'green',
+  fontStyle: 'italic',
+  fontSize: 16
+}
+```
+
+- 每個 CSS 屬性都是 JavaScript 物件的屬性。
+- 使用像素值時可以直接寫數字，不需帶單位。
+- 使用駝峰式（camelCase）書寫 CSS 屬性，例如 `fontStyle` 而非 `font-style`。
+
+---
+
+#### 2. 為 Footer 元件加入內嵌樣式
+
+接下來，我們可以建立一個 `Footer` 元件，並為它設定一些內嵌樣式：
+
+```javascript
+const Footer = () => {
+  const footerStyle = {
+    color: 'green',
+    fontStyle: 'italic',
+    fontSize: 16
+  }
+  return (
+    <div style={footerStyle}>
+      <br />
+      <em>Note app, Department of Computer Science, University of Helsinki 2024</em>
+    </div>
+  )
+}
+
+const App = () => {
+  // ...
+
+  return (
+    <div>
+      <h1>Notes</h1>
+      <Notification message={errorMessage} />
+      {/* 其他內容 */}
+      <Footer />
+    </div>
+  )
+}
+```
+
+- `footerStyle` 變數是一個 JavaScript 物件，用來設定 `Footer` 元件的樣式。
+- `style` 屬性接受這個物件作為參數，將樣式應用到 `div` 元素中。
+
+---
+
+#### 3. 內嵌樣式的限制
+
+內嵌樣式有一些限制，例如無法直接使用 pseudo-class（偽類，如 `:hover`）等效果。這樣的限制使內嵌樣式適合較簡單的樣式定義，但在更複雜的情況下可能需要其他解決方案。
+
+---
+
+#### 4. React 的樣式哲學
+
+傳統的網頁開發中，通常認為最佳做法是將 CSS、HTML 和 JavaScript 分別放置在獨立的文件中，以便維持清晰的結構。這種做法通常稱為「分離樣式與功能」。
+
+然而，React 的設計哲學與此截然不同。隨著應用程式規模的擴大，傳統的分離方式往往無法很好地擴展，因此 React 更傾向於將應用程式分為具備邏輯功能的實體單元——即 React 元件。
+
+React 元件不僅定義了結構化內容的 HTML，也包含了元件的 JavaScript 功能和樣式，目的是創建獨立且可重用的組件，提升開發的靈活性和維護性。這樣的做法使得每個元件成為一個自包含的功能單位，使大型應用的開發和管理更加簡單。
+
+--- 
+
+透過這樣的哲學，React 將結構、功能和樣式整合在同一個元件中，使其更具獨立性，並適合大型應用程式的開發需求。
