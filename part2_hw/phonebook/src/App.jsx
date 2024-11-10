@@ -10,7 +10,7 @@ const App = () => {
   const [persons, setPersons] = useState([]);
   const [newPerson, setNewPerson] = useState({ name: "", number: "" });
   const [filter, setFilter] = useState("");
-  const [message, setMessage] = useState(null);
+  const [message, setMessage] = useState({ message: null, type: "message" });
 
   useEffect(() => {
     phonebookServices
@@ -19,7 +19,12 @@ const App = () => {
         setPersons(initialPersons);
       })
       .catch((error) => {
-        alert("Failed to fetch contacts from server.");
+        setMessage(
+          {message:'Failed to fetch contacts from server', type: 'error'}
+        )
+        setTimeout(()=>{
+          setMessage({message:null})
+        }, 3000)
       });
   }, []);
 
@@ -53,9 +58,12 @@ const App = () => {
             resetNewPerson();
           })
           .catch((error) => {
-            alert(
-              `Information of ${existingPerson.name} has already been removed from server`
-            );
+            setMessage(
+              {message:`Information of  ${existingPerson.name} has already been removed from server`, type:'error'}
+            )
+            setTimeout(()=>{
+              setMessage({message:null})
+            }, 3000)
             setPersons(
               persons.filter((person) => person.id !== existingPerson.id)
             );
@@ -74,15 +82,20 @@ const App = () => {
       .then((returnedPerson) => {
         setPersons(persons.concat(returnedPerson));
         setMessage(
-          `Added ${newPerson.name}`
+          {message:`Added ${newPerson.name}`, type:'message'}
         )
         setTimeout(()=>{
-          setMessage(null)
+          setMessage({message:null})
         }, 3000)
         resetNewPerson();
       })
       .catch((error) => {
-        alert("Failed to add the contact. Please try again.");
+        setMessage(
+          {message:'Failed to add the contact. Please try again.', type:'error'}
+        )
+        setTimeout(()=>{
+          setMessage({message:null})
+        }, 3000)
       });
   };
 
@@ -104,9 +117,10 @@ const App = () => {
           setPersons(updatedPersons);
         })
         .catch((error) => {
-          alert(
-            `Failed to delete ${name}. It might have already been removed from the server.`
-          );
+          setMessage({message:`Information of ${name} has already been removed from server`, type:'error'})
+          setTimeout(()=>{
+            setMessage({message:null})
+          }, 3000)
           setPersons(persons.filter((person) => person.id !== id));
         });
     }
@@ -119,7 +133,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Notification message={message}/>
+      <Notification message={message.message} type={message.type}/>
       <Filter value={filter} handleFilterChange={handleFilterChange} />
       <PersonForm
         handleAddPerson={handleAddPerson}
