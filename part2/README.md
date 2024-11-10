@@ -1634,3 +1634,65 @@ React 元件不僅定義了結構化內容的 HTML，也包含了元件的 JavaS
 --- 
 
 透過這樣的哲學，React 將結構、功能和樣式整合在同一個元件中，使其更具獨立性，並適合大型應用程式的開發需求。
+
+## Couple of important remarks
+### 重點筆記：Couple of Important Remarks
+
+1. **初始狀態的選擇與潛在的錯誤**  
+   我們在 `App` 組件中將 `notes` 的初始值設為 `[]`（空陣列），這掩蓋了資料尚未從伺服器獲取的情況，從而避免錯誤。當初始值為 `null` 時，應用程式在首次渲染時會因無法對 `null` 使用 `map` 而報錯。解決方法包括：
+   - 設定初始值為空陣列。
+   - 使用條件渲染，確保資料尚未載入時不渲染任何內容。
+
+   ```javascript
+   const [notes, setNotes] = useState(null);
+
+   useEffect(() => {
+     noteService.getAll().then(initialNotes => {
+       setNotes(initialNotes);
+     });
+   }, []);
+
+   if (!notes) return null; // 若 notes 為 null，不渲染內容
+   ```
+
+2. **`useEffect` 的第二個參數**  
+   `useEffect` 的第二個參數控制了 effect 的執行時機。若設定為空陣列 `[]`，effect 只會在首次渲染後執行一次，這適合用於初始化應用程式狀態的場景。
+
+   當我們希望 effect 在某個狀態變更時重新執行，可以在第二個參數中指定該狀態。例如，以下應用程式會在 `currency` 變更時獲取匯率資料：
+
+   ```javascript
+   useEffect(() => {
+     if (currency) {
+       axios
+         .get(`https://open.er-api.com/v6/latest/${currency}`)
+         .then(response => setRates(response.data.rates));
+     }
+   }, [currency]);
+   ```
+
+   在此例中，`currency` 作為 `useEffect` 的依賴項，確保每當 `currency` 變更時重新執行 effect。
+
+3. **條件式處理以避免不必要的 API 請求**  
+   在上述範例中，`currency` 初始值為 `null`，所以在 `useEffect` 中使用 `if (currency)` 來跳過 `currency` 為 `null` 的初始渲染，避免了不必要的 API 請求。
+
+4. **直接在事件處理器中發送請求**  
+   在某些情況下，`useEffect` 並非唯一解決方案，例如我們可以直接在表單提交的處理函數中發送 API 請求：
+
+   ```javascript
+   const onSearch = (event) => {
+     event.preventDefault();
+     axios.get(`https://open.er-api.com/v6/latest/${value}`)
+       .then(response => setRates(response.data.rates));
+   };
+   ```
+
+   雖然這個方法較為直接，但在需要動態監聽變數變化的場景中，`useEffect` 更具靈活性。例如在 2.20 的練習中，可能需要依賴 `useEffect` 來實現所需功能。
+
+### 總結
+
+- **設定初始狀態**：根據資料是否即時可用來選擇適當的初始值，例如空陣列或 `null`。
+- **條件渲染**：當資料尚未載入時，不渲染內容以避免錯誤。
+- **`useEffect` 的依賴項設置**：根據需求指定依賴項以控制 effect 的執行時機。
+- **API 請求的選擇**：根據情境選擇在 `useEffect` 中處理或在事件處理器中發送請求。
+
+這些原則可以幫助開發者更靈活且有效地管理 React 應用程式的資料狀態與 API 通信。
