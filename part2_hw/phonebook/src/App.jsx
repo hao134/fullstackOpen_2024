@@ -4,7 +4,9 @@ import Persons from "./components/Persons";
 import PersonForm from "./components/PersonForm";
 import phonebookServices from "./services/phonebook";
 import Notification from "./components/Notification";
-import './index.css'
+import "./index.css";
+
+const NOTIFICATION_DURATION = 3000;
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -18,15 +20,17 @@ const App = () => {
       .then((initialPersons) => {
         setPersons(initialPersons);
       })
-      .catch((error) => {
-        setMessage(
-          {message:'Failed to fetch contacts from server', type: 'error'}
-        )
-        setTimeout(()=>{
-          setMessage({message:null})
-        }, 3000)
+      .catch(() => {
+        displayMessage("Failed to fetch contacts from server", "error");
       });
   }, []);
+
+  const displayMessage = (message, type = "message") => {
+    setMessage({ message, type });
+    setTimeout(() => {
+      setMessage({ message: null });
+    }, NOTIFICATION_DURATION);
+  };
 
   const resetNewPerson = () => setNewPerson({ name: "", number: "" });
 
@@ -55,15 +59,17 @@ const App = () => {
                 person.id !== existingPerson.id ? person : returnedPerson
               )
             );
+            displayMessage(
+              `Updated ${existingPerson.name}'s number`,
+              "message"
+            );
             resetNewPerson();
           })
-          .catch((error) => {
-            setMessage(
-              {message:`Information of  ${existingPerson.name} has already been removed from server`, type:'error'}
-            )
-            setTimeout(()=>{
-              setMessage({message:null})
-            }, 3000)
+          .catch(() => {
+            displayMessage(
+              `Information of ${existingPerson.name} has already been removed from server`,
+              "error"
+            );
             setPersons(
               persons.filter((person) => person.id !== existingPerson.id)
             );
@@ -81,21 +87,11 @@ const App = () => {
       .create(personObject)
       .then((returnedPerson) => {
         setPersons(persons.concat(returnedPerson));
-        setMessage(
-          {message:`Added ${newPerson.name}`, type:'message'}
-        )
-        setTimeout(()=>{
-          setMessage({message:null})
-        }, 3000)
+        displayMessage(`Added ${newPerson.name}`, "message");
         resetNewPerson();
       })
-      .catch((error) => {
-        setMessage(
-          {message:'Failed to add the contact. Please try again.', type:'error'}
-        )
-        setTimeout(()=>{
-          setMessage({message:null})
-        }, 3000)
+      .catch(() => {
+        displayMessage("Failed to add the contact. Please try again.", "error");
       });
   };
 
@@ -115,12 +111,13 @@ const App = () => {
         .then(() => {
           const updatedPersons = persons.filter((person) => person.id !== id);
           setPersons(updatedPersons);
+          displayMessage(`Deleted ${name}`, "message");
         })
-        .catch((error) => {
-          setMessage({message:`Information of ${name} has already been removed from server`, type:'error'})
-          setTimeout(()=>{
-            setMessage({message:null})
-          }, 3000)
+        .catch(() => {
+          displayMessage(
+            `Information of ${name} has already been removed from server`,
+            "error"
+          );
           setPersons(persons.filter((person) => person.id !== id));
         });
     }
@@ -133,7 +130,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Notification message={message.message} type={message.type}/>
+      <Notification message={message.message} type={message.type} />
       <Filter value={filter} handleFilterChange={handleFilterChange} />
       <PersonForm
         handleAddPerson={handleAddPerson}
