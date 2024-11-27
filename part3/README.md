@@ -238,3 +238,157 @@ Express 的原始碼會被下載到專案根目錄的 `node_modules` 資料夾�
 -   `npm install` 和 `npm update` 是管理專案依賴項的常用指令。
 
 接下來，我們會開始使用 Express 架設更靈活的後端伺服器。
+
+## Web and Express
+### Web and Express
+
+#### 實作一個簡單的 Express 伺服器
+
+以下是我們應用程式的修改版本：
+
+```javascript
+const express = require('express')
+const app = express()
+
+let notes = [
+  {
+    id: 1,
+    content: "HTML is easy",
+    important: true
+  },
+  {
+    id: 2,
+    content: "Browser can execute only JavaScript",
+    important: false
+  },
+  {
+    id: 3,
+    content: "GET and POST are the most important methods of HTTP protocol",
+    important: true
+  }
+]
+
+app.get('/', (request, response) => {
+  response.send('<h1>Hello World!</h1>')
+})
+
+app.get('/api/notes', (request, response) => {
+  response.json(notes)
+})
+
+const PORT = 3001
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})
+
+```
+
+---
+
+### 關鍵點解析
+
+#### 1. **建立 Express 應用程式**
+
+```javascript
+const express = require('express')
+const app = express()
+
+```
+
+-   `require('express')` 引入 Express 函式庫。
+-   `express()` 是一個函式，會建立並回傳一個 Express 應用程式物件，儲存在 `app` 中。
+
+---
+
+#### 2. **設定路由 (Routes)**
+
+##### **根路徑 (Root Path)**
+
+```javascript
+app.get('/', (request, response) => {
+  response.send('<h1>Hello World!</h1>')
+})
+
+```
+
+-   定義一個處理 `GET /` 的事件處理器。
+-   **`request`**：包含所有 HTTP 請求的相關資訊。
+-   **`response`**：用來定義如何回應請求。
+-   **`response.send()`**：回傳 HTML 格式的回應，這裡回傳的是 `<h1>Hello World!</h1>`。
+-   Express 自動將 `Content-Type` 設為 `text/html`，且回應的狀態碼預設為 `200`。
+
+##### **取得 JSON 資料**
+
+```javascript
+app.get('/api/notes', (request, response) => {
+  response.json(notes)
+})
+
+```
+
+-   定義一個處理 `GET /api/notes` 的事件處理器。
+-   **`response.json()`**：自動將 JavaScript 物件 `notes` 轉換為 JSON 格式並回傳，並將 `Content-Type` 設為 `application/json`。
+
+---
+
+#### 3. **啟動伺服器**
+
+```javascript
+const PORT = 3001
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})
+
+```
+
+-   啟動伺服器，監聽 `3001` 埠號上的請求。
+-   啟動後，伺服器會顯示 `Server running on port 3001`。
+
+---
+
+### JSON 與 Express
+
+在使用 Node.js 內建的 `http` 模組時，我們需要手動將物件轉換為 JSON 字串：
+
+```javascript
+response.end(JSON.stringify(notes))
+
+```
+
+在 Express 中，這個步驟是自動化的：
+
+```javascript
+response.json(notes)
+
+```
+
+---
+
+### 使用 Node.js REPL 測試 JSON
+
+Node.js 提供一個互動式的 REPL（Read-Eval-Print Loop），適合快速測試指令和功能。
+
+以下範例展示了 JSON 資料的型別：
+
+```javascript
+> const notes = [{ id: 1, content: "Hello" }]
+> JSON.stringify(notes)
+'[{"id":1,"content":"Hello"}]'
+> typeof JSON.stringify(notes)
+'string'
+
+```
+
+-   **JSON 是字串**，不是 JavaScript 的物件。
+-   使用 REPL 測試指令能幫助理解程式執行過程和資料結構。
+
+---
+
+### 總結
+
+-   **Express** 簡化了伺服器的建構，讓開發者可以快速定義路由並處理請求。
+-   使用 `response.send()` 可以回傳 HTML，`response.json()` 可直接回傳 JSON 格式資料。
+-   Express 自動處理大部分的 HTTP header，例如 `Content-Type`。
+-   Node.js 的 REPL 是測試和學習 JavaScript 的強大工具。
+
+接下來，我們將進一步擴展伺服器的功能，例如處理更多的路由和請求方法。
