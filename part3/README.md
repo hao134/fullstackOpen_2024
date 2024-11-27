@@ -392,3 +392,118 @@ Node.js 提供一個互動式的 REPL（Read-Eval-Print Loop），適合快速�
 -   Node.js 的 REPL 是測試和學習 JavaScript 的強大工具。
 
 接下來，我們將進一步擴展伺服器的功能，例如處理更多的路由和請求方法。
+## nodemon
+### **Nodemon：自動重啟伺服器的工具**
+
+#### **問題**
+
+-   每次修改伺服器程式碼後，必須手動重新啟動伺服器，流程如下：
+    1.  使用 `Ctrl+C` 停止伺服器。
+    2.  再次啟動伺服器，例如執行 `node index.js`。
+-   與 React 的自動重新載入（hot reload）相比，這樣的流程效率低下且耗時。
+
+---
+
+### **解決方法：使用 Nodemon**
+
+-   **Nodemon** 是一個工具，用於監控專案檔案的變化，並在檔案修改時自動重新啟動應用程式。
+-   它能夠大幅簡化開發過程，減少手動操作。
+
+---
+
+### **安裝 Nodemon**
+
+-   使用以下指令將 Nodemon 安裝為開發依賴：
+    
+    ```bash
+    npm install --save-dev nodemon
+    
+    ```
+    
+-   安裝後，`package.json` 檔案會自動更新，新增 `devDependencies`：
+    
+    ```json
+    {
+      "dependencies": {
+        "express": "^4.18.2"
+      },
+      "devDependencies": {
+        "nodemon": "^3.0.3"
+      }
+    }
+    
+    ```
+    
+-   **開發依賴（Dev Dependencies）**：
+    -   開發時需要的工具（如 Nodemon），但在部署到生產環境時不需要。
+    -   範例：Nodemon 用於開發期間自動重啟伺服器，但生產環境中不會用到。
+
+---
+
+### **使用 Nodemon**
+
+1.  使用 Nodemon 啟動伺服器：
+    
+    ```bash
+    node_modules/.bin/nodemon index.js
+    
+    ```
+    
+2.  當檔案被修改時，Nodemon 會自動重啟伺服器。
+3.  **注意**：即使伺服器自動重啟，仍需手動刷新瀏覽器，Nodemon 不支援自動重新載入網頁。
+
+---
+
+### **透過 npm Scripts 簡化流程**
+
+-   指令 `node_modules/.bin/nodemon` 太長，可以透過 npm scripts 簡化。
+
+#### 修改 `package.json`：
+
+```json
+{
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
+
+```
+
+-   **腳本說明**：
+    -   `"start"`：使用 Node.js 啟動伺服器。
+    -   `"dev"`：使用 Nodemon 啟動伺服器，開發模式下自動監控檔案變化並重啟伺服器。
+    -   `"test"`：未來用於測試的占位腳本，目前只是簡單的回傳錯誤訊息。
+
+---
+
+### **如何啟動伺服器**
+
+1.  開發模式下執行：
+    
+    ```bash
+    npm run dev
+    
+    ```
+    
+    -   因為是自定義腳本（如 `dev`），需要加上 `run` 關鍵字。
+2.  生產模式執行：
+    
+    ```bash
+    npm start
+    
+    ```
+    
+
+---
+
+### **重點整理**
+
+-   **Nodemon 無法自動重新載入瀏覽器**，修改後仍需手動刷新瀏覽器。
+-   **使用 `--save-dev` 安裝開發依賴**，確保這些工具只用於開發環境，不會部署到生產伺服器。
+-   **Nodemon 的優勢**：
+    -   節省開發時間，修改程式碼後自動重啟伺服器。
+    -   減少因忘記重新啟動伺服器而導致的錯誤。
+
+完成這些步驟後，你的開發流程會更加高效！接下來將學習 Express 如何處理多樣化的路由和請求。
