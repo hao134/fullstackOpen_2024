@@ -507,3 +507,78 @@ Node.js 提供一個互動式的 REPL（Read-Eval-Print Loop），適合快速�
     -   減少因忘記重新啟動伺服器而導致的錯誤。
 
 完成這些步驟後，你的開發流程會更加高效！接下來將學習 Express 如何處理多樣化的路由和請求。
+
+## REST
+### **REST：建立可擴展的網路應用架構**
+
+#### **REST 簡介**
+
+-   REST 是 **Representational State Transfer** 的縮寫，由 Roy Fielding 在 2000 年的博士論文中提出。
+-   REST 是一種架構風格，旨在建立可擴展的網路應用。
+-   我們將關注於 RESTful API 的常見理解，而不深入討論 Fielding 的正式定義。
+
+---
+
+### **資源（Resource）**
+
+-   **資源** 是 RESTful API 的核心概念，指的是應用程式中的特定物件或數據。
+-   每個資源都有一個唯一的 URL，稱為**資源地址**。
+-   例如：
+    -   資源類型為 `notes`，資源的唯一 ID 為 `10`：
+        -   單一資源的 URL: `www.example.com/api/notes/10`
+        -   所有資源的集合 URL: `www.example.com/api/notes`
+
+---
+
+### **HTTP 動詞與操作**
+
+RESTful API 通過 HTTP 動詞定義對資源的操作：
+
+| **URL** | **HTTP Verb** | **功能** |
+| --- | --- | --- |
+| `notes/10` | `GET` | 獲取單一資源 |
+| `notes` | `GET` | 獲取所有資源集合 |
+| `notes` | `POST` | 根據請求數據創建新資源 |
+| `notes/10` | `DELETE` | 刪除指定的資源 |
+| `notes/10` | `PUT` | 使用請求數據替換整個資源 |
+| `notes/10` | `PATCH` | 使用請求數據部分更新資源 |
+
+#### **統一介面（Uniform Interface）**
+
+-   RESTful API 的一個特點是提供一致的方式來操作資源，這種一致性讓系統之間更容易協作。
+-   例如，所有資源的操作都使用統一的 URL 和 HTTP 動詞。
+
+---
+
+### **RESTful 成熟度模型**
+
+RESTful API 的成熟度可以分為不同層次：
+
+-   我們目前使用的是 **Richardson Maturity Model** 的第二層次：
+    -   **使用 HTTP 動詞來操作資源**。
+    -   **使用清晰的 URL 來標識資源**。
+-   **Fielding 的原始 REST 定義** 則包含更多嚴格的條件，例如超媒體作為應用狀態的引擎（HATEOAS）。大多數現代 API 雖稱為 RESTful，但其實不完全符合 Fielding 的定義。
+
+---
+
+### **範例：應用 CRUD**
+
+-   CRUD 是 RESTful API 的核心操作模式：
+    -   **Create**（創建）→ POST
+    -   **Read**（讀取）→ GET
+    -   **Update**（更新）→ PUT / PATCH
+    -   **Delete**（刪除）→ DELETE
+
+---
+
+### **資源導向架構**
+
+-   我們實現的 API 是一種**資源導向架構**（Resource-Oriented Architecture, ROA）。
+-   雖然某些文獻將其與 Fielding 的 REST 定義區分，但這種架構已被廣泛接受作為 RESTful API 的通用模式。
+
+---
+
+### **結論**
+
+-   RESTful API 提供了清晰、一致的方式來操作資源，這讓系統之間的協作更加簡單高效。
+-   接下來的章節將應用 RESTful 概念，進一步擴展我們的應用，使其提供與 `json-server` 相同的功能。
