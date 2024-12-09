@@ -680,3 +680,98 @@ response.status(404).send({ error: 'Note not found' })
 2.  使用 `find` 方法查找筆記並返回。
 3.  當未找到資源時，返回 404 狀態碼，並可附加錯誤訊息。
 4.  此設計符合 REST API 的規範，專注於程式化使用，無需返回 HTML 頁面。
+
+## Deleting resources
+### **Deleting Resources**
+
+#### **實作刪除資源的路由**
+
+刪除資源是透過向資源的 URL 發送 **HTTP DELETE 請求**實現的。以下是刪除資源的步驟與程式碼範例：
+
+---
+
+### **1\. 定義刪除資源的路由**
+
+在 `index.js` 中新增以下路由：
+
+```javascript
+app.delete('/api/notes/:id', (request, response) => {
+  const id = request.params.id
+  notes = notes.filter(note => note.id !== id)
+
+  response.status(204).end()
+})
+
+```
+
+#### **程式碼解析**
+
+1.  **提取 `id`**：
+    
+    -   使用 `request.params.id` 從路徑參數中提取筆記的 ID。
+2.  **過濾筆記陣列**：
+    
+    -   使用陣列的 `filter` 方法過濾掉匹配該 `id` 的筆記。
+    -   更新 `notes` 陣列為不包含該筆記的版本。
+3.  **回應狀態碼 204**：
+    
+    -   使用 `response.status(204)` 設定狀態碼為 **204 No Content**。
+    -   使用 `response.end()` 回應空內容，表示操作成功且無需返回任何資料。
+
+---
+
+### **2\. 測試功能**
+
+發送 DELETE 請求，例如：
+
+```bash
+curl -X DELETE http://localhost:3001/api/notes/1
+
+```
+
+-   如果刪除成功，伺服器返回狀態碼 **204 No Content**。
+-   無論目標資源是否存在，程式碼目前都返回 **204**。
+
+---
+
+### **3\. 設計考量**
+
+-   **成功刪除的情況**：
+    
+    -   如果筆記存在且被成功刪除，返回 **204 No Content** 是 REST API 的常見慣例。
+-   **目標資源不存在的情況**：
+    
+    -   根據 REST 的設計哲學，返回 **404 Not Found** 會更清晰地表明資源不存在。
+    -   然而，在此範例中，為了簡化實現，程式對所有情況統一返回 **204**。
+
+---
+
+### **4\. 延伸功能**
+
+如果需要更準確地反映刪除的結果，可以根據資源是否存在選擇狀態碼：
+
+-   **資源存在且刪除成功**：返回 **204 No Content**。
+-   **資源不存在**：返回 **404 Not Found** 並附加錯誤訊息：
+
+```javascript
+app.delete('/api/notes/:id', (request, response) => {
+  const id = request.params.id
+  const noteExists = notes.some(note => note.id === id)
+
+  if (noteExists) {
+    notes = notes.filter(note => note.id !== id)
+    response.status(204).end()
+  } else {
+    response.status(404).send({ error: 'Note not found' })
+  }
+})
+
+```
+
+---
+
+### **總結**
+
+-   刪除資源的操作使用 **HTTP DELETE** 請求。
+-   簡化設計中，程式對刪除成功或資源不存在的情況統一返回 **204 No Content**。
+-   如果需要更準確地反映刪除狀態，可根據資源是否存在返回 **404** 或 **204**。
