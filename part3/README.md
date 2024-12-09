@@ -582,3 +582,101 @@ RESTful API 的成熟度可以分為不同層次：
 
 -   RESTful API 提供了清晰、一致的方式來操作資源，這讓系統之間的協作更加簡單高效。
 -   接下來的章節將應用 RESTful 概念，進一步擴展我們的應用，使其提供與 `json-server` 相同的功能。
+
+
+## Fetching a single resource
+### **Fetching a Single Resource**
+
+#### **新增路由以獲取單個資源**
+
+我們將應用程式擴展，使其提供 REST 接口來操作單個筆記資源。以下是步驟與實現：
+
+---
+
+### **1\. 定義路由**
+
+使用 Express 的 **colon syntax** 定義動態路由，允許從 URL 中提取參數：
+
+```javascript
+app.get('/api/notes/:id', (request, response) => {
+  const id = request.params.id
+  const note = notes.find(note => note.id === id)
+  response.json(note)
+})
+
+```
+
+-   `:id` 是 URL 的動態部分，可透過 `request.params.id` 訪問。
+-   使用陣列的 `find` 方法查找與 `id` 匹配的筆記。
+-   匹配到的筆記以 JSON 格式回應給請求方。
+
+---
+
+### **2\. 測試功能**
+
+-   輸入網址：[http://localhost:3001/api/notes/1](http://localhost:3001/api/notes/1)
+-   瀏覽器會顯示 id 為 `1` 的筆記內容（JSON 格式）。
+
+---
+
+### **3\. 處理無效 ID 的情況**
+
+當使用不存在的 ID 時，服務器返回 HTTP 狀態碼 **200**（請求成功），但內容為空。
+
+#### **解決方案：返回 404 狀態碼**
+
+-   當未找到匹配的筆記時，應返回 **404 Not Found**。
+
+修改程式碼如下：
+
+```javascript
+app.get('/api/notes/:id', (request, response) => {
+  const id = request.params.id
+  const note = notes.find(note => note.id === id)
+  
+  if (note) {
+    response.json(note)
+  } else {
+    response.status(404).end()
+  }
+})
+
+```
+
+#### **程式碼解析**
+
+1.  **`note` 的檢查**：
+    
+    -   如果找到匹配的筆記，`note` 會是物件，屬於 truthy 值。
+    -   如果未找到，`note` 為 `undefined`，屬於 falsy 值。
+2.  **404 回應**：
+    
+    -   使用 `response.status(404)` 設置狀態碼為 404。
+    -   使用 `response.end()` 回應空內容。
+
+---
+
+### **4\. 設計考量**
+
+-   REST API 是為程式化使用而設計，不需要像瀏覽器中那樣顯示詳細頁面。
+-   返回 **HTTP 狀態碼** 是提供錯誤資訊的標準方式。
+
+#### **自定義 404 錯誤訊息**
+
+可以透過修改回應內容來提供更多資訊，例如：
+
+```javascript
+response.status(404).send({ error: 'Note not found' })
+
+```
+
+此方法會在回應中附加 JSON 格式的錯誤訊息，供前端或其他消費端使用。
+
+---
+
+### **總結**
+
+1.  定義動態路由 `/api/notes/:id`。
+2.  使用 `find` 方法查找筆記並返回。
+3.  當未找到資源時，返回 404 狀態碼，並可附加錯誤訊息。
+4.  此設計符合 REST API 的規範，專注於程式化使用，無需返回 HTML 頁面。
