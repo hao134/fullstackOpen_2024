@@ -775,3 +775,156 @@ app.delete('/api/notes/:id', (request, response) => {
 -   刪除資源的操作使用 **HTTP DELETE** 請求。
 -   簡化設計中，程式對刪除成功或資源不存在的情況統一返回 **204 No Content**。
 -   如果需要更準確地反映刪除狀態，可根據資源是否存在返回 **404** 或 **204**。
+
+## Receiving data
+### **處理收到的資料：新增筆記到伺服器**
+
+以下是如何讓應用程式可以透過 HTTP POST 請求新增筆記資源的詳細整理。
+
+---
+
+### **1\. 使用 JSON 解析器**
+
+為了能夠解析請求的 JSON 格式資料，需要啟用 Express 的 JSON 解析器：
+
+```javascript
+const express = require('express')
+const app = express()
+
+app.use(express.json())
+
+```
+
+-   `app.use(express.json())`：
+    -   將請求中的 JSON 資料解析為 JavaScript 物件，並附加到 `request.body` 屬性上。
+    -   如果不使用 JSON 解析器，`request.body` 的值會是 `undefined`。
+
+---
+
+### **2\. 初始處理 HTTP POST 請求**
+
+實現新增筆記的路由，並打印接收到的資料：
+
+```javascript
+app.post('/api/notes', (request, response) => {
+  const note = request.body
+  console.log(note)
+  response.json(note)
+})
+
+```
+
+-   **功能說明**：
+    
+    -   打印 `request.body` 確保伺服器正確接收資料。
+    -   回傳接收到的資料作為回應。
+-   **測試工具**：
+    
+    -   使用 **Postman** 或 **VS Code 的 REST Client** 進行測試。
+    -   確保請求的 `Content-Type` 設置為 `application/json`，否則伺服器無法正確解析資料。
+
+---
+
+### **3\. 最佳化新增邏輯**
+
+接收到資料後，將新筆記存入應用程式的 `notes` 陣列，並生成唯一的 ID：
+
+```javascript
+app.post('/api/notes', (request, response) => {
+  const maxId = notes.length > 0
+    ? Math.max(...notes.map(n => Number(n.id)))
+    : 0
+
+  const note = request.body
+  note.id = String(maxId + 1)
+
+  notes = notes.concat(note)
+
+  response.json(note)
+})
+
+```
+
+-   **功能說明**：
+    -   利用 `Math.max` 找到現有筆記的最大 ID，並將新筆記的 ID 設為 `maxId + 1`。
+    -   使用 `concat` 方法將新筆記加入到 `notes` 陣列中，保持不可變性。
+
+---
+
+### **4\. 改進資料驗證**
+
+新增邏輯時檢查收到的資料是否符合需求，例如 `content` 是否為空，並給 `important` 屬性設定預設值：
+
+```javascript
+const generateId = () => {
+  const maxId = notes.length > 0
+    ? Math.max(...notes.map(n => Number(n.id)))
+    : 0
+  return String(maxId + 1)
+}
+
+app.post('/api/notes', (request, response) => {
+  const body = request.body
+
+  if (!body.content) {
+    return response.status(400).json({ 
+      error: 'content missing' 
+    })
+  }
+
+  const note = {
+    content: body.content,
+    important: Boolean(body.important) || false,
+    id: generateId(),
+  }
+
+  notes = notes.concat(note)
+
+  response.json(note)
+})
+
+```
+
+-   **功能說明**：
+    1.  **檢查 `content` 屬性**：
+        
+        -   如果 `content` 為空，回傳狀態碼 **400 Bad Request**，並附加錯誤訊息。
+        -   使用 `return` 避免執行後續邏輯。
+    2.  **處理 `important` 屬性**：
+        
+        -   如果沒有傳遞 `important`，預設為 `false`。
+        -   使用 `Boolean(body.important) || false` 確保值為布林型別。
+    3.  **提取生成 ID 的邏輯**：
+        
+        -   抽取成 `generateId` 函數以提升可讀性和模組化。
+
+---
+
+### **5\. 重點補充**
+
+-   **JSON 解析錯誤**：
+    
+    -   如果 `Content-Type` 未設置為 `application/json`，伺服器將無法解析資料，並可能導致 `request.body`為空物件。
+    -   可透過 `console.log(request.headers)` 檢查請求的標頭資訊。
+-   **注意開發工具**：
+    
+    -   建議使用 VS Code 的 REST Client，它可以將請求保存到 `.rest` 檔案，方便團隊共享測試。
+
+---
+
+### **6\. 測試與驗證**
+
+-   測試新增筆記時：
+    1.  發送符合要求的 JSON 資料。
+    2.  驗證伺服器是否正確生成 ID 並回傳筆記。
+    3.  測試缺少 `content` 的情況，是否返回狀態碼 **400**。
+
+---
+
+### **程式運作流程**
+
+1.  伺服器收到 POST 請求，解析 `JSON` 資料。
+2.  檢查資料完整性（如 `content`）。
+3.  生成新筆記的唯一 ID 並儲存到 `notes` 陣列。
+4.  回應新增的筆記給客戶端。
+
