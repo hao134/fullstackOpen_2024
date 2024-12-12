@@ -31,7 +31,13 @@ const generateId = () => {
     const maxId = persons.length > 0
         ? Math.max(...persons.map(n => n.id))
         : 0
-    return maxId + 1
+    
+    const minId = maxId + 1
+    const maxIdLimit = 100000;
+
+    const randomId = Math.random() * (maxIdLimit - minId) + minId;
+    
+    return Math.floor(randomId);
 }
 
 app.get('/', (request, response) => {
@@ -43,20 +49,30 @@ app.get('/api/persons', (request, response) => {
 })
 
 app.get('/api/persons/:id', (request, response) => {
-  const id = request.params.id
-  const person = persons.find(person => person.id === id)
-  
-  if (person) {
-      response.json(person)
-  } else {
-      response.status(404).end()
-  }
+    const id = request.params.id
+    const person = persons.find(person => person.id === id)
+    
+    if (person) {
+        response.json(person)
+    } else {
+        response.status(404).end()
+    }
 })
 
 app.delete('/api/persons/:id', (request, response) => {
-  const id = request.params.id 
-  persons = persons.filter(person => person.id !== id)
-  response.status(204).end()
+    const id = request.params.id 
+    persons = persons.filter(person => person.id !== id)
+
+    response.status(204).end()
+})
+
+app.post('/api/persons', (request, response) => {
+    const person = request.body
+    person.id = generateId()
+
+    persons = persons.concat(person)
+
+    response.json(person)
 })
 
 app.get('/info', (request, response) => {
@@ -66,7 +82,7 @@ app.get('/info', (request, response) => {
     );
 })
 
-const PORT = 3001
+const PORT = 3002
 app.listen(PORT,()=>{
     console.log(`Server running on port ${PORT}`)
 })
