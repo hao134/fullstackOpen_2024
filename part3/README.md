@@ -1004,3 +1004,208 @@ HTTP 標準定義了兩個與請求類型相關的重要屬性：**安全性 (Sa
 -   確保 API 的行為符合設計預期，避免在非標準使用下導致潛在問題。
 
 
+## Middleware
+### **MiddleWare：Express 中間件功能整理**
+
+---
+
+### **1\. 中間件 (Middleware) 是什麼？**
+
+-   中間件是處理請求和回應對象的函數，常用於增強或修改 Express 應用的行為。
+-   它可以攔截、處理請求，並在完成後傳遞控制權給下一個中間件。
+
+---
+
+### **2\. 常見中間件：json-parser**
+
+-   **作用**：
+    
+    -   解析請求的原始數據（如 JSON），並將其轉換為 JavaScript 對象。
+    -   然後將解析後的對象附加到請求對象的 `body` 屬性中。
+-   **使用方法**：
+    
+    ```javascript
+    app.use(express.json())
+    
+    ```
+    
+-   **執行順序**：
+    
+    -   中間件按代碼中定義的順序逐一執行。
+
+---
+
+### **3\. 自定義中間件：請求日誌紀錄**
+
+-   自定義中間件可用於擴展功能，例如記錄每個請求的訊息。
+    
+-   **範例：自定義請求日誌中間件**
+    
+    ```javascript
+    const requestLogger = (request, response, next) => {
+      console.log('Method:', request.method)
+      console.log('Path:  ', request.path)
+      console.log('Body:  ', request.body)
+      console.log('---')
+      next() // 將控制權傳遞給下一個中間件
+    }
+    
+    app.use(requestLogger)
+    
+    ```
+    
+-   **注意順序**：
+    
+    -   必須在所有路由之前使用，否則請求可能已被處理。
+    -   如果需要 `request.body`，請確保在 `json-parser` 之後執行。
+
+---
+
+### **4\. 捕捉未知端點**
+
+-   當請求未匹配到任何路由時，返回 404 狀態碼和錯誤訊息。
+    
+-   **範例：捕捉未知端點**
+    
+    ```javascript
+    const unknownEndpoint = (request, response) => {
+      response.status(404).send({ error: 'unknown endpoint' })
+    }
+    
+    app.use(unknownEndpoint)
+    
+    ```
+    
+-   **執行順序**：
+    
+    -   應放置在所有路由定義之後，專門處理未匹配的請求。
+
+---
+
+### **5\. 中間件的執行流程**
+
+1.  請求進入應用，按順序執行已註冊的中間件。
+2.  每個中間件需要執行 `next()`，將控制權交給下一個中間件。
+3.  如果中間件未調用 `next()`，請求將卡在該中間件，無法繼續處理。
+
+---
+
+### **6\. 小結**
+
+-   中間件可以用於各種用途，例如：
+    -   請求日誌、驗證、錯誤處理、數據解析。
+-   正確的中間件順序是關鍵：
+    -   **JSON 解析** (`express.json`) 應先於需要訪問 `request.body` 的中間件。
+    -   **未知端點處理** 應置於所有路由之後。
+### 特別解釋
+```javascript!
+const requestLogger = (request, response, next) => {
+  console.log('Method:', request.method)
+  console.log('Path:  ', request.path)
+  console.log('Body:  ', request.body)
+  console.log('---')
+  next() // 將控制權傳遞給下一個中間件
+}
+```
+這段程式碼的核心目的是建立一個**中間件函數**，用來記錄每次進入伺服器的請求資訊，並透過 `next()` 傳遞控制權給下一個中間件或路由處理器。
+
+---
+
+### **程式碼解析**
+
+1.  **函數宣告**：
+    
+    ```javascript
+    const requestLogger = (request, response, next) => { ... }
+    
+    ```
+    
+    -   **`request`**：代表 HTTP 請求對象，包含請求的詳細資訊（如方法、路徑、主體內容等）。
+    -   **`response`**：代表 HTTP 回應對象，允許對請求進行回應。
+    -   **`next`**：是一個函數，用來將控制權傳遞給下一個中間件。
+
+---
+
+2.  **功能：記錄請求資訊**
+    
+    ```javascript
+    console.log('Method:', request.method)
+    console.log('Path:  ', request.path)
+    console.log('Body:  ', request.body)
+    console.log('---')
+    
+    ```
+    
+    -   **`request.method`**：記錄 HTTP 方法，例如 `GET`、`POST` 等。
+    -   **`request.path`**：記錄請求的路徑，例如 `/api/notes`。
+    -   **`request.body`**：記錄請求的主體內容，這需要搭配 `express.json()` 中間件進行 JSON 解析，否則會是 `undefined`。
+    -   **分隔線 `---`**：純粹用來分隔日誌輸出，方便檢視。
+
+---
+
+3.  **傳遞控制權**
+    
+    ```javascript
+    next()
+    
+    ```
+    
+    -   調用 `next()` 告訴 Express，這個中間件的任務完成，並將控制權傳遞給下一個中間件或匹配的路由處理器。
+    -   如果忘記調用 `next()`，請求將會卡在這個中間件，後續處理無法執行。
+
+---
+
+4.  **啟用中間件**
+    
+    ```javascript
+    app.use(requestLogger)
+    
+    ```
+    
+    -   使用 `app.use()` 將中間件加入 Express 應用中。
+    -   **作用範圍**：適用於所有進入伺服器的請求，無論路由是否匹配。
+
+---
+
+### **範例輸出**
+
+假設有一個 `POST` 請求到 `/api/notes`，其主體內容為：
+
+```json
+{
+  "content": "Learn middleware",
+  "important": true
+}
+
+```
+
+在伺服器端的控制台輸出：
+
+```
+Method: POST
+Path:   /api/notes
+Body:   { content: 'Learn middleware', important: true }
+---
+
+```
+
+---
+
+### **應用場景**
+
+1.  **除錯與日誌**：
+    
+    -   記錄請求的方法、路徑、主體，方便開發者檢查伺服器接收到的資料是否正確。
+2.  **請求監控**：
+    
+    -   在實際運行中，可以用來記錄使用者的請求行為，協助分析與排查問題。
+3.  **基礎教學**：
+    
+    -   展示中間件的基本結構與 `next()` 的使用方式。
+
+---
+
+### **注意事項**
+
+1.  必須在其他需要處理請求的中間件或路由之前定義此中間件。
+2.  如果要記錄 `request.body`，必須確保在此中間件之前啟用 `express.json()`。
