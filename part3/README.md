@@ -1628,3 +1628,235 @@ fly deploy
 - **開發階段**使用開發模式以獲得快速迭代和即時反饋。
 - **部署階段**必須生成 Production Build (`npm run build`)，以獲得更小的文件體積和更高的執行效率。
 - **`dist` 資料夾**是正式部署的核心文件，將其上傳到伺服器即可完成前端應用程式的部署。
+
+## Serving static files from the backend
+### **Serving Static Files from the Backend**
+
+在這一小節，我們學習如何將 React 前端應用的靜態文件與後端服務整合，讓整個應用通過後端伺服器來提供服務。
+
+---
+
+#### **1\. 將前端 Production Build 整合到後端**
+
+首先，我們需要將前端的生產環境構建（`dist` 目錄）拷貝到後端專案的根目錄。  
+在 macOS 或 Linux 上，可以在前端目錄中執行以下指令：
+
+```bash
+cp -r dist ../backend
+
+```
+
+如果使用 Windows，則可以使用 `copy` 或 `xcopy` 命令，或者直接手動複製貼上。
+
+完成後，後端目錄的結構應該類似如下：
+
+```
+backend/
+├── dist/
+│   ├── index.html
+│   ├── assets/
+├── index.js
+├── package.json
+└── ...
+
+```
+
+---
+
+#### **2\. 使用 Express 提供靜態文件**
+
+要讓 Express 提供前端靜態文件，我們需要使用 Express 的內建中介軟體 `express.static`。
+
+在 `index.js` 中加入以下代碼，用來指定 `dist` 目錄作為靜態文件的來源：
+
+```javascript
+app.use(express.static('dist'))
+
+```
+
+這段代碼的作用是：當 Express 收到 HTTP GET 請求時，會先檢查 `dist` 目錄是否有對應的文件。如果找到正確的文件，Express 就會直接回應該文件。
+
+---
+
+#### **3\. 整合前端與後端的 API**
+
+因為現在前端和後端都在同一個伺服器（例如 `http://localhost:3001`）上運行，前端請求後端 API 時可以使用相對路徑。
+
+![截圖 2024-12-15 晚上11.27.27](https://hackmd.io/_uploads/r15DHdnNkx.jpg)
+
+
+更新前端的 `services/notes.js`，將 `baseUrl` 修改為相對路徑：
+
+```javascript
+import axios from 'axios'
+const baseUrl = '/api/notes'
+
+const getAll = () => {
+  const request = axios.get(baseUrl)
+  return request.then(response => response.data)
+}
+
+// 其他函數...
+
+```
+
+這樣的好處是，前端可以直接使用 `/api/notes` 來請求後端，而不需要硬編碼伺服器的完整 URL。
+
+---
+
+#### **4\. 測試整合應用**
+
+完成整合後，重新構建前端並將其拷貝到後端目錄中：
+
+```bash
+npm run build  # 在前端目錄中執行
+cp -r dist ../backend  # 拷貝 dist 文件夾到後端
+
+```
+
+啟動後端伺服器，然後打開 `http://localhost:3001` 測試應用。
+
+-   當訪問 `http://localhost:3001` 時，伺服器會返回 `dist/index.html` 作為 React 前端的主頁。
+-   當 React 前端運行時，會通過相對路徑 `/api/notes` 請求後端的 API 獲取數據。
+
+---
+
+#### **5\. 生產環境運作流程**
+
+以下是應用在生產環境中的工作流程：
+
+1.  瀏覽器訪問 `http://localhost:3001`，伺服器返回 `index.html`。
+2.  `index.html` 指示瀏覽器加載壓縮後的 JavaScript 文件和 CSS 文件（位於 `dist/assets/`）。
+3.  當 React 應用運行時，通過 `/api/notes` 路徑向伺服器請求數據。
+4.  後端處理 `/api/notes` 請求，返回 JSON 格式的數據。
+
+---
+
+#### **6\. 應用的架構圖**
+
+整合後的應用架構如下：
+
+-   **單個 Node.js 後端**：負責提供前端靜態文件和處理 API 請求。
+-   **React 前端**：在瀏覽器中運行，從同一個後端請求數據。
+
+```plaintext
++----------------------+       +----------------------+
+| React Frontend       |       | Node.js Backend     |
+| (Browser)            |       | - Serves frontend   |
+|                      | <---> | - Handles API calls |
+|                      |       |   e.g. /api/notes   |
++----------------------+       +----------------------+
+
+```
+![截圖 2024-12-15 晚上11.29.27](https://hackmd.io/_uploads/BkVkLOhV1l.jpg)
+
+現在整個應用已準備好進行產品部署，所有資源（前端和後端）都通過單一伺服器提供服務。
+
+## The whole app to the internet
+### **The Whole App to the Internet**
+
+將完整應用部署到互聯網是最後的部署步驟，以下是整個過程的詳細整理：
+
+---
+
+#### **1\. 確認本地生產版本正常運行**
+
+在部署之前，確保應用的生產版本（production build）在本地環境中能夠正常運行。步驟包括：
+
+1.  **前端生產版本構建**：
+    
+    ```bash
+    npm run build
+    
+    ```
+    
+    生成的 `dist` 目錄包含壓縮的前端文件。
+    
+2.  **將 `dist` 目錄整合到後端**： 確保後端正確提供 `dist/index.html` 和靜態文件。
+    
+3.  **本地測試**： 啟動後端伺服器，檢查前後端功能是否協同正常。
+    
+
+---
+
+#### **2\. 推送到 GitHub**
+
+將整合了 `dist` 目錄的後端專案推送到 GitHub：
+
+1.  **提交生產版本到後端專案**：
+    
+    ```bash
+    git add .
+    git commit -m "Add frontend production build"
+    git push origin main
+    
+    ```
+    
+2.  **注意：不要忽略 `dist` 目錄**： 檢查 `.gitignore` 文件，確保 `dist` 目錄未被忽略。如果使用 Render，尤其要注意此點。
+    
+
+---
+
+#### **3\. 部署到 Render 或 Fly.io**
+
+-   **Render 部署**：
+    
+    -   如果 Render 設置了自動部署，推送到 GitHub 後，應用會自動部署。
+    -   如果自動部署失敗，可以從 Render Dashboard 選擇手動部署。
+-   **Fly.io 部署**：
+    
+    -   在 Fly.io 上，執行以下命令以進行部署：
+        
+        ```bash
+        fly deploy
+        
+        ```
+        
+    -   **注意：檢查 `.dockerignore` 文件**：
+        -   預設情況下，`.dockerignore` 會忽略 `dist` 目錄，導致前端未被部署。
+        -   刪除 `.dockerignore` 中 `dist` 的引用，確保前端被部署。
+
+---
+
+#### **4\. 應用目前的狀態**
+
+成功部署後，應用會如下運作：
+
+1.  **前端訪問路徑**： 當用戶訪問應用的根路徑（如 `https://your-app.fly.dev` 或 Render 的對應地址），伺服器會返回 `dist/index.html`。
+    
+2.  **前端-後端交互**： React 應用加載後，會通過 `/api/notes` 路徑向後端請求數據。
+    
+3.  **缺陷**：
+    
+    -   目前未實現更改備註重要性的後端功能，因此該功能無法使用。
+    -   備註數據僅保存在後端變數中，伺服器重啟或崩潰會導致數據丟失。
+
+---
+
+#### **5\. 部署後的架構圖**
+
+成功部署後，應用的結構如下：
+
+```plaintext
++-----------------------------+       +-----------------------------+
+|  Browser with React App     |       |   Fly.io/Render Server      |
+|                             |       |                             |
+|                             | <---> | Node.js + Express Backend   |
+|   Frontend (dist/index.html)|       | API (e.g., /api/notes)      |
+|                             |       |                             |
++-----------------------------+       +-----------------------------+
+
+```
+
+![截圖 2024-12-15 晚上11.42.38](https://hackmd.io/_uploads/Hy9xtuhV1e.jpg)
+
+
+
+-   瀏覽器請求伺服器根路徑時，後端返回壓縮後的 React 前端應用。
+-   React 前端啟動後，通過 `/api/notes` 與同一後端進行交互。
+
+---
+
+#### **6\. 下一步工作**
+
+目前的部署雖然完成，但數據保存仍有問題。後續需要引入數據庫來持久化數據，以解決伺服器重啟導致數據丟失的問題。
