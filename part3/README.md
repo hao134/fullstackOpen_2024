@@ -1454,3 +1454,124 @@ Body:   { content: 'Learn middleware', important: true }
     -   使用 CORS 中間件，靈活配置允許的來源和請求方式。
 
 :::
+
+## Application to the Internet
+### 部署應用程式到互聯網 (Application to the Internet)
+
+#### 部署背景
+在這一節中，我們將完整堆疊應用程式部署到互聯網，使用的平台是 **Fly.io** 或 **Render**。這些 PaaS (Platform as a Service) 平台提供 Node.js 執行環境，並可能提供額外的功能如資料庫等。
+
+#### 選擇平台
+1. **Fly.io**（官方推薦）：
+   - 支援本課程的所有章節，包括 CI/CD 和更多進階內容。
+   - 免費層提供兩個虛擬機（VM）。
+   - 可能需要信用卡資訊，但某些情況下可以不提供。
+2. **Render**：
+   - 不需要安裝額外軟體。
+   - 免費層無需信用卡資訊。
+   - 適合本課程的大部分章節（但可能不支援進階的 CI/CD 部分）。
+3. **其他選項**：
+   - **Replit** 和 **CodeSandBox** 也適合作為 Node.js 應用的簡易部署服務。
+
+---
+
+### 部署準備
+
+1. 修改 **後端伺服器的端口設定**，確保應用可以讀取環境變數設定的 `PORT`：
+   ```javascript
+   const PORT = process.env.PORT || 3001;
+   app.listen(PORT, () => {
+     console.log(`Server running on port ${PORT}`);
+   });
+   ```
+
+2. **環境變數的重要性**：
+   - Fly.io 和 Render 等平台會自動設置 `PORT` 環境變數，用於指引應用在哪個端口上運行。
+   - 如果 `process.env.PORT` 未定義，則使用本地開發環境的預設端口（如 3001）。
+
+---
+
+### Fly.io 部署
+
+#### 1. 安裝 Fly.io CLI 工具
+參考官方指引安裝 `flyctl` 工具並創建帳號。
+
+#### 2. 認證 Fly.io 帳戶
+執行以下指令登入 Fly.io 帳戶：
+```bash
+fly auth login
+```
+
+#### 3. 初始化應用
+在後端應用的根目錄執行以下指令初始化 Fly.io 應用：
+```bash
+fly launch --no-deploy
+```
+在此過程中：
+- 為應用命名（或使用自動生成的名稱）。
+- 選擇應用運行的地區。
+- **不要**創建 PostgreSQL 或 Upstash Redis 資料庫，這些並非本課程所需。
+
+此指令會生成一個 `fly.toml` 配置檔案。
+
+#### 4. 配置 `fly.toml`
+編輯 `fly.toml`，確保以下設定正確：
+```toml
+[env]
+  PORT = "3000" # 設定環境變數 PORT
+[http_service]
+  internal_port = 3000 # 確保與 PORT 一致
+  force_https = true
+```
+
+#### 5. 部署應用
+執行以下指令將應用部署到 Fly.io：
+```bash
+fly deploy
+```
+
+#### 6. 查看應用運行情況
+- 開啟應用：
+  ```bash
+  fly apps open
+  ```
+- 檢視伺服器日誌（建議部署時隨時查看）：
+  ```bash
+  fly logs
+  ```
+
+#### 7. 機器數量調整（避免資料不一致）
+Fly.io 默認可能會為應用創建兩台虛擬機（VM），這可能導致資料不同步。檢查機器數量：
+```bash
+fly scale show
+```
+如果 `COUNT > 1`，請執行以下指令限制為一台：
+```bash
+fly scale count 1
+```
+
+#### 8. 部署更新
+每當應用程式有新變更時，使用以下指令重新部署：
+```bash
+fly deploy
+```
+
+---
+
+### Render 部署（備選）
+1. **創建 Render 帳號**
+   - 登錄 Render，選擇創建新的 Web Service。
+2. **選擇後端應用的 GitHub 儲存庫**
+   - 連接應用的 GitHub 儲存庫。
+3. **設置應用的環境變數**
+   - 將 `PORT` 環境變數設置為 `3000`。
+4. **自動部署**
+   - Render 支持自動部署，無需額外操作。
+
+---
+
+### 小結
+1. Fly.io 和 Render 是適合學習的免費選擇。
+2. Fly.io 提供更進階的功能，但可能需要信用卡驗證。
+3. 部署後，務必查看伺服器日誌以檢查運行情況。
+4. 確保後端應用正確讀取 `PORT` 環境變數，以適應部署平台的要求。
