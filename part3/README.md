@@ -1575,3 +1575,56 @@ fly deploy
 2. Fly.io 提供更進階的功能，但可能需要信用卡驗證。
 3. 部署後，務必查看伺服器日誌以檢查運行情況。
 4. 確保後端應用正確讀取 `PORT` 環境變數，以適應部署平台的要求。
+
+## Frontend produciton build
+### **Frontend Production Build**
+
+#### **什麼是 Production Build？**
+到目前為止，我們的 React 應用程式一直在 **開發模式 (development mode)** 下運行。這種模式的目的是提供清晰的錯誤訊息、即時的代碼變更反應等功能。
+
+然而，在應用程式部署時，我們需要一個 **生產環境版本 (production build)**，這個版本經過優化，更適合正式運行，並且會移除開發模式的調試功能。
+
+---
+
+#### **如何建立 Production Build**
+1. **執行指令**
+   - 在 Vite 創建的 React 專案中，可以使用以下指令生成生產環境版本：
+     ```bash
+     npm run build
+     ```
+
+2. **生成的檔案**
+   - **執行完畢後**，會在專案根目錄生成一個名為 `dist` 的目錄。
+   - `dist` 目錄包含：
+     - **index.html**：應用程式的入口 HTML 文件。
+     - **assets 資料夾**：包含應用程式的壓縮 JavaScript 和 CSS 檔案。
+
+3. **代碼壓縮與優化**
+   - 所有的應用程式 JavaScript 文件會壓縮 (minify) 成單個文件。
+   - 所有依賴項的代碼也會合併並壓縮到此單一文件中。
+   - 這樣可以縮短加載時間，並提升瀏覽器運行效率。
+
+4. **壓縮代碼範例**
+   - 壓縮後的代碼不再可讀，類似於以下內容：
+     ```javascript
+     !function(e){function r(r){for(var n,f,i=r[0],l=r[1],a=r[2],c=0,s=[];c<i.length;c++)f=i[c],o[f]&&s.push(o[f][0]),o[f]=0;for(n in l)Object.prototype.hasOwnProperty.call(l,n)&&(e[n]=l[n]);for(p&&p(r);s.length;)s.shift()();return u.push.apply(u,a||[]),t()} ...
+     ```
+   - 壓縮的目的是減小文件大小，提升性能。
+
+---
+
+#### **Production Build 的用途**
+1. **部署**
+   - `dist` 資料夾是應用程式的 **部署版本**。
+   - 這些檔案可以上傳到網頁伺服器（如 Fly.io、Render 或其他部署平台）。
+
+2. **優化特性**
+   - 生產版本的代碼無法直接被人類閱讀，降低了代碼被抄襲或竊取的風險。
+   - 適合大規模分發或公開使用的應用程式。
+
+---
+
+#### **小結**
+- **開發階段**使用開發模式以獲得快速迭代和即時反饋。
+- **部署階段**必須生成 Production Build (`npm run build`)，以獲得更小的文件體積和更高的執行效率。
+- **`dist` 資料夾**是正式部署的核心文件，將其上傳到伺服器即可完成前端應用程式的部署。
