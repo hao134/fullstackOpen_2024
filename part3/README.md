@@ -1209,3 +1209,248 @@ Body:   { content: 'Learn middleware', important: true }
 
 1.  必須在其他需要處理請求的中間件或路由之前定義此中間件。
 2.  如果要記錄 `request.body`，必須確保在此中間件之前啟用 `express.json()`。
+
+
+# b. Deploying app to internet
+## Same origin policy and CORS
+### **Same-Origin Policy and CORS**
+
+#### **背景介紹**
+
+1.  **同源政策 (Same-Origin Policy)**：
+    
+    -   瀏覽器的安全機制，用來防止某些安全漏洞（如會話劫持）。
+    -   **同源的定義**：協議 (protocol)、主機名 (hostname)、以及埠號 (port) 都相同。
+        -   例如：
+            
+            ```
+            URL: http://example.com:80/index.html
+            - 協議: http
+            - 主機名: example.com
+            - 埠號: 80
+            
+            ```
+            
+    -   瀏覽器從伺服器請求資源時，如果資源的 URL 與原始 HTML 文件的 URL 共享相同的來源，則瀏覽器會正常處理回應。
+    -   如果資源的來源不同，瀏覽器會檢查回應中的 **`Access-Control-Allow-Origin`** 標頭：
+        -   如果標頭允許跨域（例如設為 `*` 或指定的來源），則瀏覽器處理該資源。
+        -   否則，瀏覽器拒絕該回應並拋出錯誤。
+2.  **跨來源資源共享 (CORS)**：
+    
+    -   為了允許合法的跨來源請求（如 AJAX 請求），W3C 定義了 **CORS** 機制。
+    -   根據 Wikipedia 的定義：
+        
+        > 跨來源資源共享（CORS）是一種機制，允許網頁從不同來源請求受限制的資源。
+        
+    -   某些跨來源請求默認被禁止，例如 Ajax 請求，而 CORS 允許我們在伺服器端設置策略，允許特定的來源進行請求。
+
+---
+
+#### **問題描述**
+
+-   我們的 React 前端執行在 `localhost:5173`，而後端伺服器執行在 `localhost:3001`。
+-   因為協議、主機名和埠號不完全相同，這些請求屬於跨來源請求，會被瀏覽器的同源政策阻止。
+
+---
+
+#### **解決方案：使用 CORS 中間件**
+
+1.  **安裝 cors 套件**：
+    
+    ```bash
+    npm install cors
+    
+    ```
+    
+2.  **啟用 CORS 中間件**：
+    
+    -   在後端程式中引入並啟用 CORS：
+        
+        ```javascript
+        const cors = require('cors')
+        app.use(cors())
+        
+        ```
+        
+    -   這樣會允許來自所有來源的請求（不推薦在生產環境中使用）。
+3.  **設定特定來源**：
+    
+    -   如果後端僅需允許特定的前端進行請求，可以進一步配置：
+        
+        ```javascript
+        app.use(cors({
+          origin: 'http://localhost:5173' // 僅允許來自此來源的請求
+        }))
+        
+        ```
+        
+
+---
+
+#### **注意事項**
+
+-   啟用 CORS 時應仔細考慮配置，避免不必要的安全風險。
+-   在生產環境中，應僅允許特定來源訪問後端。
+
+---
+
+#### **目前應用架構**
+
+-   **前端**：
+    -   React 應用運行於瀏覽器，從 `localhost:3001` 的 Node.js/Express 伺服器獲取數據。
+-   **後端**：
+    -   使用 Express 提供 API，並啟用了 CORS 中間件，允許跨來源請求。
+
+---
+
+#### **結論**
+
+-   **同源政策**是瀏覽器的一個安全限制，限制跨來源的請求。
+-   **CORS** 是一種機制，允許伺服器端控制哪些來源可以合法地訪問資源。
+-   我們透過啟用 `cors` 中間件，解決了前後端在不同來源下的跨域請求問題。
+
+此時，我們的應用大部分功能已經正常運作。
+![截圖 2024-12-15 下午6.04.29](https://hackmd.io/_uploads/Sy_nF7hE1e.jpg)
+:::info
+### **深入解釋同源政策和 CORS**
+
+#### **什麼是同源政策？**
+
+**同源政策 (Same-Origin Policy)** 是一個瀏覽器的安全機制，用來保護用戶的數據不被未授權的網站訪問。
+
+**同源的條件**：兩個 URL 的 **協議 (protocol)**、**主機名 (hostname)**、**埠號 (port)** 都要完全相同。 例如：
+
+-   `http://example.com:80` 和 `http://example.com:80` 是 **同源**。
+-   `http://example.com` 和 `https://example.com` 因為協議不同，所以 **不同源**。
+-   `http://example.com:3001` 和 `http://example.com:3002` 因為埠號不同，所以 **不同源**。
+
+**為什麼需要同源政策？** 假設沒有同源政策：
+
+1.  **場景：**
+    -   你登入了一個網站，例如網銀，這個網站有你的敏感信息和操作權限。
+    -   如果同源政策不存在，其他網站（如惡意網站）可以通過你的瀏覽器直接向網銀的 API 發送請求，竊取數據或者進行未授權的操作。
+2.  **解決：**
+    -   同源政策限制了網頁的 JavaScript，只能向與它相同來源的 API 發送請求，這樣可以防止數據被未授權的網站訪問。
+
+#### **CORS 是什麼？**
+
+**CORS (Cross-Origin Resource Sharing)** 是為了解決合法的跨來源請求問題而提出的機制。
+
+例如，假設我們的應用前端和後端運行在不同的端口：
+
+-   **前端**：`http://localhost:5173`
+-   **後端**：`http://localhost:3001`
+
+由於端口不同，這兩者是 **不同源**，瀏覽器會阻止前端向後端發送請求。
+
+但這種情況下，我們明知道這個請求是合法的，因為我們開發了前端和後端。  
+**CORS** 機制允許後端伺服器明確告訴瀏覽器：「這個來源的請求是安全的，可以被允許。」
+
+---
+
+#### **同源政策和 CORS 的運作過程**
+
+1.  **請求流程：**
+    
+    -   瀏覽器檢測到跨來源請求時，不會立即允許請求。
+    -   瀏覽器會向伺服器發送一個「**預檢請求 (Preflight Request)**」。
+        -   方法：HTTP OPTIONS 請求
+        -   功能：詢問伺服器是否允許這個跨來源請求。
+    -   伺服器通過 CORS 設置響應，告訴瀏覽器是否允許請求。
+2.  **伺服器回應的關鍵頭部：**
+    
+    -   `Access-Control-Allow-Origin`：指定允許的來源，例如：
+        -   `*`：允許所有來源（開發中可用，生產環境不建議）。
+        -   `http://localhost:5173`：僅允許這個來源。
+    -   `Access-Control-Allow-Methods`：允許的 HTTP 方法（如 GET, POST）。
+    -   `Access-Control-Allow-Headers`：允許的自定義頭部。
+
+---
+
+#### **如何在 Node.js 後端中使用 CORS？**
+
+1.  **安裝 CORS 中間件：**
+    
+    ```bash
+    npm install cors
+    
+    ```
+    
+2.  **引入並啟用 CORS：**
+    
+    ```javascript
+    const cors = require('cors');
+    app.use(cors());
+    
+    ```
+    
+    這將允許所有來源進行跨域請求。
+    
+3.  **限制允許的來源（更安全的做法）：**
+    
+    ```javascript
+    app.use(cors({
+        origin: 'http://localhost:5173', // 僅允許來自這個來源的請求
+    }));
+    
+    ```
+    
+
+---
+
+#### **前後端交互示例**
+
+1.  **後端設置**：
+    
+    ```javascript
+    const express = require('express');
+    const cors = require('cors');
+    const app = express();
+    
+    app.use(cors()); // 啟用 CORS
+    app.get('/api/data', (req, res) => {
+        res.json({ message: 'Hello from backend!' });
+    });
+    
+    const PORT = 3001;
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+    
+    ```
+    
+2.  **前端請求**：
+    
+    ```javascript
+    fetch('http://localhost:3001/api/data')
+        .then(response => response.json())
+        .then(data => console.log(data.message))
+        .catch(error => console.error('Error:', error));
+    
+    ```
+    
+
+---
+
+#### **為什麼需要 CORS？**
+
+-   **防止惡意跨來源請求：**
+    -   惡意網站無法在用戶不知情的情況下操作合法的後端。
+-   **允許合法的跨來源請求：**
+    -   我們的前端和後端通常位於不同的域名或端口下，CORS 可以解決這個問題。
+
+#### **注意事項**
+
+-   **開發環境**：
+    -   可以允許所有來源（`*`），方便測試。
+-   **生產環境**：
+    -   僅允許可信來源，並限制允許的方法和頭部。
+
+#### **總結**
+
+-   **同源政策**：瀏覽器的安全機制，限制跨來源請求。
+-   **CORS**：伺服器設置的機制，允許特定來源的跨域請求。
+-   **實現方式**：
+    -   使用 CORS 中間件，靈活配置允許的來源和請求方式。
+
+:::
